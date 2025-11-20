@@ -191,13 +191,21 @@ CREATE TABLE "profiles" (
 
 CREATE TABLE "users" (
     "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    "profile_id" UUID NOT NULL,
-    "clerk_user_id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+    "clerk_id" TEXT NOT NULL UNIQUE,
+    "name" TEXT NOT NULL,
+    "email" TEXT,
     "role" VARCHAR(20) DEFAULT 'user',
     "created_at" TIMESTAMPTZ DEFAULT now() NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT now() NOT NULL -- 추가됨 (트리거 작동을 위해 필요)
+    "updated_at" TIMESTAMPTZ DEFAULT now() NOT NULL
 );
+
+-- RLS 비활성화 (개발 환경용)
+ALTER TABLE "users" DISABLE ROW LEVEL SECURITY;
+
+-- 권한 부여
+GRANT ALL ON TABLE "users" TO anon;
+GRANT ALL ON TABLE "users" TO authenticated;
+GRANT ALL ON TABLE "users" TO service_role;
 
 -- 외래키 제약조건과 인덱스 추가
 
@@ -234,8 +242,6 @@ ALTER TABLE "cs_messages" ADD CONSTRAINT fk_cs_messages_thread FOREIGN KEY ("cs_
 ALTER TABLE "wholesalers" ADD CONSTRAINT fk_wholesalers_user FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE;
 
 ALTER TABLE "inquiries" ADD CONSTRAINT fk_inquiries_user FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE;
-
-ALTER TABLE "users" ADD CONSTRAINT fk_users_profile FOREIGN KEY ("profile_id") REFERENCES "profiles"("id") ON DELETE CASCADE;
 
 -- 인덱스 추가
 
@@ -280,8 +286,7 @@ CREATE INDEX idx_inquiries_status ON "inquiries" ("status");
 CREATE INDEX idx_profiles_clerk_user_id ON "profiles" ("clerk_user_id");
 CREATE INDEX idx_profiles_status ON "profiles" ("status");
 
-CREATE INDEX idx_users_profile_id ON "users" ("profile_id");
-CREATE INDEX idx_users_clerk_user_id ON "users" ("clerk_user_id");
+CREATE INDEX idx_users_clerk_id ON "users" ("clerk_id");
 
 -- 각 테이블에 updated_at 트리거 적용
 
