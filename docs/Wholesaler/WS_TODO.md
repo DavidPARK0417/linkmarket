@@ -120,40 +120,203 @@
   - [ ] 레퍼런스 사이트 공유 (shadcn/ui, Linear, Stripe)
   - [ ] Week 2-8 디자인 일정 확인
 
-### 📁 기본 구조 생성 (Day 5-7)
+### 📁 통합 폴더 구조 생성 (Day 5-7)
 
-- [ ] **폴더 구조 생성**
+> **⚠️ 중요**: 프로젝트 초기에 소매/도매/관리자를 모두 고려한 통합 폴더 구조를 생성합니다.  
+> 이렇게 하면 팀원 간 구조 일관성을 유지하고, 공통 영역을 효율적으로 관리할 수 있습니다.
 
-  - [ ] `src/app/(auth)/` 디렉토리 생성
+#### 🎯 작업 원칙
+
+- **빈 폴더만 생성**: 실제 파일(`page.tsx`, 컴포넌트 등)은 만들지 않기
+- **전체 구조 생성**: 소매/도매/관리자 모두 포함
+- **공통 영역 포함**: `components/shared/`, 공통 쿼리 등 구조만 생성
+
+#### 📋 폴더 구조 생성 체크리스트
+
+- [ ] **app 폴더 구조 생성** (빈 폴더만)
+
+  - [ ] `app/(auth)/` 디렉토리 생성
+
     - [ ] `sign-in/` 폴더
     - [ ] `sign-up/` 폴더
     - [ ] `role-selection/` 폴더
     - [ ] `wholesaler-onboarding/` 폴더
-  - [ ] `src/app/wholesaler/` 디렉토리 생성
+    - [ ] `retailer-onboarding/` 폴더 (소매 담당, 빈 폴더만)
+
+  - [ ] `app/retailer/` 디렉토리 생성 (소매 담당, 빈 폴더만)
+
+    - [ ] `dashboard/` 폴더
+    - [ ] `products/` 폴더
+    - [ ] `products/[id]/` 폴더
+    - [ ] `cart/` 폴더
+    - [ ] `checkout/` 폴더
+    - [ ] `orders/` 폴더
+    - [ ] `orders/[id]/` 폴더
+    - [ ] `cs/` 폴더
+
+  - [ ] `app/wholesaler/` 디렉토리 생성 (🎯 도매 담당)
+
     - [ ] `pending-approval/` 폴더
     - [ ] `dashboard/` 폴더
     - [ ] `products/` 폴더
+    - [ ] `products/new/` 폴더
+    - [ ] `products/[id]/edit/` 폴더
     - [ ] `market-prices/` 폴더
     - [ ] `orders/` 폴더
+    - [ ] `orders/[id]/` 폴더
     - [ ] `settlements/` 폴더
-  - [ ] `src/components/ui/` 디렉토리 (shadcn/ui 컴포넌트)
-  - [ ] `src/components/common/` 디렉토리 생성
-  - [ ] `src/components/wholesaler/` 디렉토리 생성
+
+  - [ ] `app/admin/` 디렉토리 생성 (관리자 담당, 빈 폴더만)
+    - [ ] `dashboard/` 폴더
+    - [ ] `wholesalers/` 폴더
+    - [ ] `users/` 폴더
+    - [ ] `cs/` 폴더
+    - [ ] `audit-logs/` 폴더
+
+- [ ] **components 폴더 구조 생성** (빈 폴더만)
+
+  - [ ] `components/ui/` 디렉토리 (shadcn/ui 컴포넌트는 나중에 설치)
+  - [ ] `components/common/` 디렉토리 생성
+  - [ ] `components/shared/` 디렉토리 생성 (소매/도매 공통 컴포넌트)
+  - [ ] `components/retailer/` 디렉토리 생성 (소매 담당, 빈 폴더만)
+    - [ ] `Layout/` 폴더
+    - [ ] `Products/` 폴더
+    - [ ] `Cart/` 폴더
+    - [ ] `Checkout/` 폴더
+    - [ ] `Orders/` 폴더
+  - [ ] `components/wholesaler/` 디렉토리 생성 (🎯 도매 담당)
     - [ ] `Layout/` 폴더
     - [ ] `Dashboard/` 폴더
     - [ ] `Products/` 폴더
     - [ ] `MarketPrices/` 폴더
     - [ ] `Orders/` 폴더
     - [ ] `Settlements/` 폴더
-    - [ ] `Inquiries/` 폴더 (선택)
-  - [ ] `src/lib/` 디렉토리 생성
-    - [ ] `supabase/` 폴더
-    - [ ] `clerk/` 폴더
-    - [ ] `api/` 폴더
-    - [ ] `validation/` 폴더
-    - [ ] `utils/` 폴더
-  - [ ] `src/types/` 디렉토리 생성
-  - [ ] `src/hooks/` 디렉토리 생성
+
+- [ ] **lib 폴더 구조 생성** (빈 폴더만)
+
+  - [ ] `lib/supabase/` 디렉토리 생성
+    - [ ] `queries/` 폴더 생성
+      - [ ] `products.ts` 파일은 나중에 (공통 쿼리)
+      - [ ] `orders.ts` 파일은 나중에 (공통 쿼리)
+      - [ ] `wholesalers.ts` 파일은 나중에 (도매 전용)
+      - [ ] `retailers.ts` 파일은 나중에 (소매 전용)
+      - [ ] `settlements.ts` 파일은 나중에 (도매 전용)
+  - [ ] `lib/clerk/` 디렉토리 생성
+  - [ ] `lib/api/` 디렉토리 생성
+  - [ ] `lib/validation/` 디렉토리 생성
+  - [ ] `lib/utils/` 디렉토리 생성
+
+- [ ] **types 폴더 생성** (빈 폴더만)
+
+  - [ ] `types/` 디렉토리 생성
+  - [ ] 파일들은 나중에 필요할 때 생성
+
+- [ ] **hooks 폴더 생성** (빈 폴더만)
+
+  - [ ] `hooks/` 디렉토리 생성
+  - [ ] 파일들은 나중에 필요할 때 생성
+
+#### ⚠️ 주의사항
+
+1. **빈 폴더만 생성**: 실제 파일은 만들지 않기
+2. **소매/관리자 영역**: 폴더 구조만 생성하고, 실제 파일은 해당 팀원이 생성
+3. **공통 영역**: `components/shared/`, `lib/supabase/queries/products.ts` 등은 구조만 생성
+4. **팀원과 공유**: 폴더 구조 생성 후 소매 담당자와 관리자 담당자에게 공유
+
+#### 📝 폴더 생성 방법
+
+**방법 1: 터미널 명령어 사용 (권장)**
+
+프로젝트 루트에서 다음 명령어를 실행:
+
+```bash
+# app 폴더 구조
+mkdir -p app/\(auth\)/sign-in
+mkdir -p app/\(auth\)/sign-up
+mkdir -p app/\(auth\)/role-selection
+mkdir -p app/\(auth\)/wholesaler-onboarding
+mkdir -p app/\(auth\)/retailer-onboarding
+
+mkdir -p app/retailer/dashboard
+mkdir -p app/retailer/products/\[id\]
+mkdir -p app/retailer/cart
+mkdir -p app/retailer/checkout
+mkdir -p app/retailer/orders/\[id\]
+mkdir -p app/retailer/cs
+
+mkdir -p app/wholesaler/pending-approval
+mkdir -p app/wholesaler/dashboard
+mkdir -p app/wholesaler/products/new
+mkdir -p app/wholesaler/products/\[id\]/edit
+mkdir -p app/wholesaler/market-prices
+mkdir -p app/wholesaler/orders/\[id\]
+mkdir -p app/wholesaler/settlements
+
+mkdir -p app/admin/dashboard
+mkdir -p app/admin/wholesalers
+mkdir -p app/admin/users
+mkdir -p app/admin/cs
+mkdir -p app/admin/audit-logs
+
+# components 폴더 구조
+mkdir -p components/ui
+mkdir -p components/common
+mkdir -p components/shared
+mkdir -p components/retailer/Layout
+mkdir -p components/retailer/Products
+mkdir -p components/retailer/Cart
+mkdir -p components/retailer/Checkout
+mkdir -p components/retailer/Orders
+mkdir -p components/wholesaler/Layout
+mkdir -p components/wholesaler/Dashboard
+mkdir -p components/wholesaler/Products
+mkdir -p components/wholesaler/MarketPrices
+mkdir -p components/wholesaler/Orders
+mkdir -p components/wholesaler/Settlements
+
+# lib 폴더 구조
+mkdir -p lib/supabase/queries
+mkdir -p lib/clerk
+mkdir -p lib/api
+mkdir -p lib/validation
+mkdir -p lib/utils
+
+# types, hooks 폴더
+mkdir -p types
+mkdir -p hooks
+```
+
+**방법 2: VS Code에서 수동 생성**
+
+1. VS Code에서 프로젝트 열기
+2. 좌측 파일 탐색기에서 `app` 폴더 우클릭
+3. "New Folder" 선택하여 폴더 생성
+4. 위 구조대로 하나씩 생성
+
+**방법 3: Cursor AI에게 요청**
+
+```
+프로젝트 루트에 통합 폴더 구조를 생성해줘.
+빈 폴더만 생성하고, 실제 파일은 만들지 마.
+```
+
+#### ✅ 생성 확인
+
+폴더 생성 후 다음을 확인:
+
+- [ ] `app/retailer/`, `app/wholesaler/`, `app/admin/` 폴더 존재
+- [ ] `components/shared/` 폴더 존재
+- [ ] `lib/supabase/queries/` 폴더 존재
+- [ ] `types/`, `hooks/` 폴더 존재
+
+#### 📝 다음 단계
+
+폴더 구조 생성 완료 후:
+
+- 실제 파일은 작업할 때마다 필요에 따라 생성
+- 도매 관련 파일부터 시작 (`app/wholesaler/`, `components/wholesaler/`)
+- 공통 영역 수정 시 반드시 소매 담당자와 확인
+- 폴더 구조 생성 완료를 소매 담당자와 관리자 담당자에게 공유
 
 - [ ] **타입 정의 파일 작성**
 

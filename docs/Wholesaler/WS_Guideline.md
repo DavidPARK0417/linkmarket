@@ -203,136 +203,359 @@ NEXT_PUBLIC_PLATFORM_FEE_RATE=0.05  # 5% 플랫폼 수수료
 
 ## 4. 프로젝트 구조
 
-### 4.1 폴더 구조
+### 4.1 통합 폴더 구조 (소매/도매/관리자)
+
+> **⚠️ 중요**: 프로젝트 초기에 전체 폴더 구조를 한 번에 생성하는 것이 좋습니다.  
+> 이렇게 하면 팀원 간 구조 일관성을 유지하고, 공통 영역을 효율적으로 관리할 수 있습니다.
+
+#### 📁 전체 구조 개요
 
 ```
-src/
-├── app/
-│   ├── (auth)/                   # 인증 관련
-│   │   ├── sign-in/
-│   │   ├── sign-up/
-│   │   ├── role-selection/       # 역할 선택 (소매/도매)
-│   │   │   └── page.tsx
-│   │   └── wholesaler-onboarding/  # 도매 사업자 정보 입력
-│   │       └── page.tsx
-│   │
-│   └── wholesaler/               # 🎯 도매 페이지 (당신의 작업 영역!)
-│       ├── layout.tsx            # 도매 전용 레이아웃
-│       │
-│       ├── pending-approval/     # 승인 대기 페이지
-│       │   └── page.tsx
-│       │
-│       ├── dashboard/            # 대시보드
-│       │   └── page.tsx
-│       │
-│       ├── products/             # 상품 관리
-│       │   ├── page.tsx          # 상품 목록
-│       │   ├── new/
-│       │   │   └── page.tsx      # 상품 등록
-│       │   └── [id]/
-│       │       └── edit/
-│       │           └── page.tsx  # 상품 수정
-│       │
-│       ├── market-prices/        # 시세 조회
-│       │   └── page.tsx          # 농수산물 시세 조회
-│       │
-│       ├── orders/               # 주문 관리
-│       │   ├── page.tsx          # 주문 목록
-│       │   └── [id]/
-│       │       └── page.tsx      # 주문 상세
-│       │
-│       ├── settlements/          # 정산 관리
-│       │   └── page.tsx
-│       │
-│       └── inquiries/            # 문의 관리 (선택)
-│           └── page.tsx
+app/
+├── (auth)/                      # 인증 관련 (공통)
+│   ├── sign-in/
+│   ├── sign-up/
+│   ├── role-selection/          # 역할 선택 (소매/도매)
+│   ├── wholesaler-onboarding/   # 도매 사업자 정보 입력
+│   └── retailer-onboarding/     # 소매 기본 정보 입력 (소매 담당)
 │
-├── components/
-│   ├── ui/                       # shadcn/ui 컴포넌트
-│   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   ├── card.tsx
-│   │   └── ...
-│   │
-│   ├── common/                   # 전체 공통 컴포넌트
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── EmptyState.tsx
-│   │   └── PageHeader.tsx
-│   │
-│   └── wholesaler/               # 도매 전용 컴포넌트
-│       ├── Layout/
-│       │   ├── Sidebar.tsx       # 사이드바
-│       │   └── Header.tsx        # 헤더
-│       │
-│       ├── Dashboard/
-│       │   ├── StatCard.tsx      # 통계 카드
-│       │   └── RecentOrders.tsx  # 최근 주문
-│       │
-│       ├── Products/
-│       │   ├── ProductForm.tsx   # 상품 등록/수정 폼
-│       │   ├── ProductTable.tsx  # 상품 테이블
-│       │   └── ProductCard.tsx   # 상품 카드
-│       │
-│       ├── MarketPrices/         # 시세 조회 컴포넌트
-│       │   ├── PriceTable.tsx    # 시세 테이블
-│       │   ├── PriceChart.tsx    # 시세 차트
-│       │   └── PriceFilter.tsx   # 시세 검색 필터
-│       │
-│       ├── Orders/
-│       │   ├── OrderTable.tsx    # 주문 테이블
-│       │   ├── OrderDetail.tsx   # 주문 상세
-│       │   └── OrderStatusBadge.tsx # 주문 상태 뱃지
-│       │
-│       ├── Settlements/
-│       │   └── SettlementTable.tsx
-│       │
-│       └── Inquiries/            # 문의 관리 (선택)
-│           ├── InquiryTable.tsx  # 문의 테이블
-│           ├── InquiryFilter.tsx # 문의 필터
-│           └── InquiryReplyForm.tsx # 답변 작성 폼
+├── retailer/                    # 🛒 소매 페이지 (소매 담당)
+│   ├── layout.tsx
+│   ├── dashboard/
+│   ├── products/
+│   │   ├── page.tsx             # 상품 목록
+│   │   └── [id]/
+│   │       └── page.tsx         # 상품 상세
+│   ├── cart/                    # 장바구니 (3순위)
+│   ├── checkout/                # 결제 (7순위)
+│   ├── orders/
+│   │   ├── page.tsx             # 주문 목록
+│   │   └── [id]/
+│   │       └── page.tsx         # 주문 상세
+│   └── cs/                      # CS 문의 (5순위)
 │
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts             # Supabase 클라이언트
-│   │   ├── server.ts             # 서버용 클라이언트
-│   │   ├── realtime.ts           # 실시간 구독
-│   │   └── queries/
-│   │       ├── wholesalers.ts    # 도매점 쿼리
-│   │       ├── products.ts       # 상품 쿼리
-│   │       ├── orders.ts         # 주문 쿼리
-│   │       ├── settlements.ts    # 정산 쿼리
-│   │       └── inquiries.ts       # 문의 쿼리 (선택)
-│   │
-│   ├── clerk/
-│   │   └── auth.ts               # 인증 유틸
-│   │
-│   ├── api/
-│   │   ├── ai-standardize.ts     # AI 상품명 표준화 (Gemini)
-│   │   └── market-prices.ts      # 농수산물 시세 API (공공데이터포털)
-│   │
-│   ├── validation/
-│   │   ├── wholesaler.ts         # 도매 사업자 정보 유효성 검증
-│   │   ├── product.ts            # 상품 유효성 검증
-│   │   └── inquiry.ts            # 문의 유효성 검증 (선택)
-│   │
-│   └── utils/
-│       ├── format.ts             # 포맷 유틸 (날짜, 금액)
-│       └── constants.ts          # 상수 (은행 목록, 지역 목록, 주문 상태 등)
+├── wholesaler/                  # 🏭 도매 페이지 (🎯 당신의 작업 영역!)
+│   ├── layout.tsx               # 도매 전용 레이아웃
+│   ├── pending-approval/        # 승인 대기 페이지
+│   ├── dashboard/               # 대시보드
+│   ├── products/                # 상품 관리
+│   │   ├── page.tsx             # 상품 목록
+│   │   ├── new/                 # 상품 등록 (AI 표준화, 시세 조회)
+│   │   └── [id]/edit/           # 상품 수정
+│   ├── market-prices/           # 시세 조회
+│   ├── orders/                  # 주문 관리
+│   │   ├── page.tsx             # 주문 목록
+│   │   └── [id]/                # 주문 상세
+│   └── settlements/             # 정산 관리
 │
-├── types/
-│   ├── database.ts               # Supabase 타입 정의
-│   ├── wholesaler.ts             # 도매점 타입
-│   ├── product.ts                # 상품 타입
-│   ├── order.ts                  # 주문 타입
-│   ├── settlement.ts             # 정산 타입
-│   └── inquiry.ts                # 문의 타입 (선택)
+└── admin/                       # 👨‍💼 관리자 페이지 (관리자 담당)
+    ├── layout.tsx
+    ├── dashboard/
+    ├── wholesalers/             # 도매 승인/관리
+    ├── users/                   # 계정 관리
+    ├── cs/                      # CS 티켓 (5순위)
+    └── audit-logs/              # 감사 로그 (6순위)
+
+components/
+├── ui/                          # shadcn/ui 컴포넌트 (공통)
+│   ├── button.tsx
+│   ├── input.tsx
+│   ├── card.tsx
+│   └── ...
 │
-└── hooks/
-    ├── useWholesaler.ts          # 현재 도매점 정보
-    ├── useProducts.ts            # 상품 데이터 훅
-    ├── useOrders.ts              # 주문 데이터 훅
-    └── useRealtime.ts            # 실시간 구독 훅
+├── common/                      # 전체 공통 컴포넌트
+│   ├── LoadingSpinner.tsx
+│   ├── EmptyState.tsx
+│   └── PageHeader.tsx
+│
+├── shared/                      # 소매/도매 공통 컴포넌트
+│   ├── ProductCard.tsx          # 상품 카드 (양쪽에서 사용)
+│   ├── OrderStatusBadge.tsx     # 주문 상태 뱃지
+│   └── PriceDisplay.tsx          # 가격 표시
+│
+├── retailer/                    # 소매 전용 컴포넌트 (소매 담당)
+│   ├── Layout/
+│   ├── Products/
+│   ├── Cart/
+│   ├── Checkout/
+│   └── Orders/
+│
+└── wholesaler/                  # 도매 전용 컴포넌트 (🎯 당신의 작업 영역!)
+    ├── Layout/
+    │   ├── Sidebar.tsx          # 사이드바
+    │   └── Header.tsx           # 헤더
+    ├── Dashboard/
+    │   ├── StatCard.tsx         # 통계 카드
+    │   └── RecentOrders.tsx     # 최근 주문
+    ├── Products/
+    │   ├── ProductForm.tsx      # 상품 등록/수정 폼
+    │   ├── ProductTable.tsx     # 상품 테이블
+    │   └── ProductCard.tsx      # 상품 카드
+    ├── MarketPrices/            # 시세 조회 컴포넌트
+    │   ├── PriceTable.tsx       # 시세 테이블
+    │   ├── PriceChart.tsx       # 시세 차트
+    │   └── PriceFilter.tsx      # 시세 검색 필터
+    ├── Orders/
+    │   ├── OrderTable.tsx       # 주문 테이블
+    │   ├── OrderDetail.tsx      # 주문 상세
+    │   └── OrderStatusBadge.tsx # 주문 상태 뱃지
+    └── Settlements/
+        └── SettlementTable.tsx
+
+lib/
+├── supabase/
+│   ├── client.ts                # Supabase 클라이언트 (공통)
+│   ├── server.ts                 # 서버용 클라이언트 (공통)
+│   ├── realtime.ts               # 실시간 구독 (공통)
+│   └── queries/                 # 쿼리 함수들
+│       ├── products.ts           # 상품 쿼리 (공통 - 소매/도매 모두 사용)
+│       ├── orders.ts             # 주문 쿼리 (공통)
+│       ├── wholesalers.ts        # 도매점 쿼리 (도매 전용)
+│       ├── retailers.ts          # 소매점 쿼리 (소매 전용)
+│       └── settlements.ts        # 정산 쿼리 (도매 전용)
+│
+├── clerk/
+│   └── auth.ts                   # 인증 유틸 (공통)
+│
+├── api/
+│   ├── ai-standardize.ts         # AI 상품명 표준화 (Gemini) - 도매용
+│   └── market-prices.ts          # 농수산물 시세 API - 도매용
+│
+├── validation/
+│   ├── product.ts                # 상품 유효성 검증 (공통)
+│   ├── order.ts                  # 주문 유효성 검증 (공통)
+│   ├── wholesaler.ts            # 도매 사업자 정보 유효성 검증
+│   └── retailer.ts               # 소매 정보 유효성 검증 (소매 담당)
+│
+└── utils/
+    ├── format.ts                 # 포맷 유틸 (날짜, 금액) - 공통
+    └── constants.ts              # 상수 (은행 목록, 지역 목록, 주문 상태 등) - 공통
+
+types/
+├── database.ts                   # Supabase 타입 정의 (공통)
+├── product.ts                    # 상품 타입 (공통)
+├── order.ts                      # 주문 타입 (공통)
+├── wholesaler.ts                 # 도매점 타입
+├── retailer.ts                   # 소매점 타입 (소매 담당)
+└── settlement.ts                 # 정산 타입
+
+hooks/
+├── useProducts.ts                # 상품 데이터 훅 (공통)
+├── useOrders.ts                  # 주문 데이터 훅 (공통)
+├── useWholesaler.ts              # 현재 도매점 정보
+├── useRetailer.ts                # 현재 소매점 정보 (소매 담당)
+└── useRealtime.ts                # 실시간 구독 훅 (공통)
 ```
+
+#### 🎯 도매 담당자가 할 작업
+
+**✅ 지금 바로 할 것 (빈 폴더 구조 생성)**
+
+1. **전체 app 폴더 구조 생성** (빈 폴더만)
+
+   - `app/(auth)/` 하위 폴더들
+   - `app/retailer/` 하위 폴더들 (빈 폴더만)
+   - `app/wholesaler/` 하위 폴더들 (빈 폴더만)
+   - `app/admin/` 하위 폴더들 (빈 폴더만)
+
+2. **전체 components 폴더 구조 생성** (빈 폴더만)
+
+   - `components/ui/` (shadcn/ui는 나중에 설치)
+   - `components/common/` (빈 폴더만)
+   - `components/shared/` (빈 폴더만)
+   - `components/retailer/` 하위 폴더들 (빈 폴더만)
+   - `components/wholesaler/` 하위 폴더들 (빈 폴더만)
+
+3. **전체 lib 폴더 구조 생성** (빈 폴더만)
+
+   - `lib/supabase/queries/` (빈 폴더만)
+   - `lib/api/` (빈 폴더만)
+   - `lib/validation/` (빈 폴더만)
+   - `lib/utils/` (빈 폴더만)
+
+4. **전체 types 폴더 생성** (빈 폴더만)
+
+5. **전체 hooks 폴더 생성** (빈 폴더만)
+
+**⚠️ 주의사항**
+
+- **빈 폴더만 생성**: 실제 파일(`page.tsx`, 컴포넌트 등)은 만들지 않기
+- **소매/관리자 영역**: 폴더 구조만 생성하고, 실제 파일은 해당 팀원이 생성
+- **공통 영역**: `components/shared/`, `lib/supabase/queries/products.ts` 등은 구조만 생성
+
+**📝 나중에 필요할 때 추가할 것**
+
+- 실제 페이지 파일 (`page.tsx`)
+- 컴포넌트 파일
+- 타입 정의 파일
+- 훅 파일
+- 쿼리 함수 파일
+
+#### 🤝 팀 협업 가이드
+
+**공통 영역 사용 시 주의사항**
+
+1. **`components/shared/`**: 소매/도매 모두 사용하는 컴포넌트
+
+   - 수정 전 반드시 소매 담당자와 확인
+   - 예: `ProductCard.tsx`, `OrderStatusBadge.tsx`
+
+2. **`lib/supabase/queries/products.ts`**: 상품 쿼리 (공통)
+
+   - 소매와 도매 모두 사용
+   - 수정 전 반드시 소매 담당자와 확인
+
+3. **`types/product.ts`, `types/order.ts`**: 공통 타입
+   - 수정 전 반드시 소매 담당자와 확인
+
+**도매 전용 영역 (자유롭게 작업 가능)**
+
+- `app/wholesaler/` 하위 모든 파일
+- `components/wholesaler/` 하위 모든 파일
+- `lib/supabase/queries/wholesalers.ts`
+- `lib/supabase/queries/settlements.ts`
+- `types/wholesaler.ts`
+- `types/settlement.ts`
+
+### 4.2 폴더 구조 생성 가이드
+
+#### 🚀 빠른 생성 방법
+
+**터미널 명령어 사용 (권장)**
+
+프로젝트 루트에서 다음 명령어를 실행하면 전체 폴더 구조가 한 번에 생성됩니다:
+
+```bash
+# app 폴더 구조
+mkdir -p app/\(auth\)/sign-in
+mkdir -p app/\(auth\)/sign-up
+mkdir -p app/\(auth\)/role-selection
+mkdir -p app/\(auth\)/wholesaler-onboarding
+mkdir -p app/\(auth\)/retailer-onboarding
+
+mkdir -p app/retailer/dashboard
+mkdir -p app/retailer/products/\[id\]
+mkdir -p app/retailer/cart
+mkdir -p app/retailer/checkout
+mkdir -p app/retailer/orders/\[id\]
+mkdir -p app/retailer/cs
+
+mkdir -p app/wholesaler/pending-approval
+mkdir -p app/wholesaler/dashboard
+mkdir -p app/wholesaler/products/new
+mkdir -p app/wholesaler/products/\[id\]/edit
+mkdir -p app/wholesaler/market-prices
+mkdir -p app/wholesaler/orders/\[id\]
+mkdir -p app/wholesaler/settlements
+
+mkdir -p app/admin/dashboard
+mkdir -p app/admin/wholesalers
+mkdir -p app/admin/users
+mkdir -p app/admin/cs
+mkdir -p app/admin/audit-logs
+
+# components 폴더 구조
+mkdir -p components/ui
+mkdir -p components/common
+mkdir -p components/shared
+mkdir -p components/retailer/Layout
+mkdir -p components/retailer/Products
+mkdir -p components/retailer/Cart
+mkdir -p components/retailer/Checkout
+mkdir -p components/retailer/Orders
+mkdir -p components/wholesaler/Layout
+mkdir -p components/wholesaler/Dashboard
+mkdir -p components/wholesaler/Products
+mkdir -p components/wholesaler/MarketPrices
+mkdir -p components/wholesaler/Orders
+mkdir -p components/wholesaler/Settlements
+
+# lib 폴더 구조
+mkdir -p lib/supabase/queries
+mkdir -p lib/clerk
+mkdir -p lib/api
+mkdir -p lib/validation
+mkdir -p lib/utils
+
+# types, hooks 폴더
+mkdir -p types
+mkdir -p hooks
+```
+
+**Windows PowerShell 사용 시**
+
+```powershell
+# app 폴더 구조
+New-Item -ItemType Directory -Force -Path "app\(auth)\sign-in"
+New-Item -ItemType Directory -Force -Path "app\(auth)\sign-up"
+New-Item -ItemType Directory -Force -Path "app\(auth)\role-selection"
+New-Item -ItemType Directory -Force -Path "app\(auth)\wholesaler-onboarding"
+New-Item -ItemType Directory -Force -Path "app\(auth)\retailer-onboarding"
+
+New-Item -ItemType Directory -Force -Path "app\retailer\dashboard"
+New-Item -ItemType Directory -Force -Path "app\retailer\products\[id]"
+New-Item -ItemType Directory -Force -Path "app\retailer\cart"
+New-Item -ItemType Directory -Force -Path "app\retailer\checkout"
+New-Item -ItemType Directory -Force -Path "app\retailer\orders\[id]"
+New-Item -ItemType Directory -Force -Path "app\retailer\cs"
+
+New-Item -ItemType Directory -Force -Path "app\wholesaler\pending-approval"
+New-Item -ItemType Directory -Force -Path "app\wholesaler\dashboard"
+New-Item -ItemType Directory -Force -Path "app\wholesaler\products\new"
+New-Item -ItemType Directory -Force -Path "app\wholesaler\products\[id]\edit"
+New-Item -ItemType Directory -Force -Path "app\wholesaler\market-prices"
+New-Item -ItemType Directory -Force -Path "app\wholesaler\orders\[id]"
+New-Item -ItemType Directory -Force -Path "app\wholesaler\settlements"
+
+New-Item -ItemType Directory -Force -Path "app\admin\dashboard"
+New-Item -ItemType Directory -Force -Path "app\admin\wholesalers"
+New-Item -ItemType Directory -Force -Path "app\admin\users"
+New-Item -ItemType Directory -Force -Path "app\admin\cs"
+New-Item -ItemType Directory -Force -Path "app\admin\audit-logs"
+
+# components 폴더 구조
+New-Item -ItemType Directory -Force -Path "components\ui"
+New-Item -ItemType Directory -Force -Path "components\common"
+New-Item -ItemType Directory -Force -Path "components\shared"
+New-Item -ItemType Directory -Force -Path "components\retailer\Layout"
+New-Item -ItemType Directory -Force -Path "components\retailer\Products"
+New-Item -ItemType Directory -Force -Path "components\retailer\Cart"
+New-Item -ItemType Directory -Force -Path "components\retailer\Checkout"
+New-Item -ItemType Directory -Force -Path "components\retailer\Orders"
+New-Item -ItemType Directory -Force -Path "components\wholesaler\Layout"
+New-Item -ItemType Directory -Force -Path "components\wholesaler\Dashboard"
+New-Item -ItemType Directory -Force -Path "components\wholesaler\Products"
+New-Item -ItemType Directory -Force -Path "components\wholesaler\MarketPrices"
+New-Item -ItemType Directory -Force -Path "components\wholesaler\Orders"
+New-Item -ItemType Directory -Force -Path "components\wholesaler\Settlements"
+
+# lib 폴더 구조
+New-Item -ItemType Directory -Force -Path "lib\supabase\queries"
+New-Item -ItemType Directory -Force -Path "lib\clerk"
+New-Item -ItemType Directory -Force -Path "lib\api"
+New-Item -ItemType Directory -Force -Path "lib\validation"
+New-Item -ItemType Directory -Force -Path "lib\utils"
+
+# types, hooks 폴더
+New-Item -ItemType Directory -Force -Path "types"
+New-Item -ItemType Directory -Force -Path "hooks"
+```
+
+#### ✅ 생성 확인
+
+폴더 생성 후 다음을 확인:
+
+- [ ] `app/retailer/`, `app/wholesaler/`, `app/admin/` 폴더 존재
+- [ ] `components/shared/` 폴더 존재
+- [ ] `lib/supabase/queries/` 폴더 존재
+- [ ] `types/`, `hooks/` 폴더 존재
+
+#### 📝 다음 단계
+
+1. 폴더 구조 생성 완료
+2. 소매 담당자와 관리자 담당자에게 구조 공유
+3. 실제 파일은 작업할 때마다 필요에 따라 생성
+4. 도매 관련 파일부터 시작 (`app/wholesaler/`, `components/wholesaler/`)
 
 ---
 
