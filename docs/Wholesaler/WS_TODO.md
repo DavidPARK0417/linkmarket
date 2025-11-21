@@ -318,10 +318,10 @@ mkdir -p hooks
 - 공통 영역 수정 시 반드시 소매 담당자와 확인
 - 폴더 구조 생성 완료를 소매 담당자와 관리자 담당자에게 공유
 
-- [ ] **타입 정의 파일 작성**
+- [x] **타입 정의 파일 작성**
 
-  - [ ] `types/database.ts` - Supabase 타입 정의
-  - [ ] `types/wholesaler.ts` - 도매점 타입 정의
+  - [x] `types/database.ts` - Supabase 타입 정의
+  - [x] `types/wholesaler.ts` - 도매점 타입 정의
     ```typescript
     interface Wholesaler {
       id: string;
@@ -339,16 +339,16 @@ mkdir -p hooks
       approved_at?: string;
     }
     ```
-  - [ ] `types/product.ts` - 상품 타입 정의
-  - [ ] `types/order.ts` - 주문 타입 정의
-  - [ ] `types/settlement.ts` - 정산 타입 정의
-  - [ ] `types/inquiry.ts` - 문의 타입 정의 (선택)
+  - [x] `types/product.ts` - 상품 타입 정의
+  - [x] `types/order.ts` - 주문 타입 정의
+  - [x] `types/settlement.ts` - 정산 타입 정의
+  - [x] `types/inquiry.ts` - 문의 타입 정의
 
-- [ ] **Supabase 클라이언트 설정**
+- [x] **Supabase 클라이언트 설정**
 
-  - [ ] `lib/supabase/client.ts` 작성 (클라이언트 사이드용)
-  - [ ] `lib/supabase/server.ts` 작성 (서버 사이드용)
-  - [ ] `lib/supabase/realtime.ts` 작성 (실시간 구독용)
+  - [x] `lib/supabase/client.ts` 작성 (클라이언트 사이드용)
+  - [x] `lib/supabase/server.ts` 작성 (서버 사이드용)
+  - [x] `lib/supabase/realtime.ts` 작성 (실시간 구독용)
 
 - [ ] **Clerk 인증 설정**
 

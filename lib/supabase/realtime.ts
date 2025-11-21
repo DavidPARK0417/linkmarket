@@ -1,0 +1,297 @@
+/**
+ * @file realtime.ts
+ * @description Supabase Realtime 구독 함수들
+ *
+ * 이 파일은 Supabase Realtime을 사용하여 실시간 데이터 변경을 구독하는 함수들을 제공합니다.
+ * 주문 알림, 도매 승인 상태 변경, 문의 알림 등을 실시간으로 받을 수 있습니다.
+ *
+ * ⚠️ 중요: 메모리 누수 방지
+ * - 모든 구독 함수는 cleanup 함수를 반환합니다
+ * - useEffect에서 사용 시 반드시 cleanup 함수를 호출해야 합니다
+ * - 컴포넌트 언마운트 시 구독을 해제하지 않으면 메모리 누수가 발생합니다
+ *
+ * @example
+ * ```tsx
+ * 'use client';
+ *
+ * import { useEffect } from 'react';
+ * import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+ * import { subscribeToNewOrders } from '@/lib/supabase/realtime';
+ *
+ * export default function DashboardPage() {
+ *   const supabase = useClerkSupabaseClient();
+ *   const wholesalerId = 'your-wholesaler-id';
+ *
+ *   useEffect(() => {
+ *     const unsubscribe = subscribeToNewOrders(
+ *       supabase,
+ *       wholesalerId,
+ *       (order) => {
+ *         console.log('새 주문:', order);
+ *         // 토스트 알림 표시 등
+ *       }
+ *     );
+ *
+ *     // ⚠️ 필수: cleanup 함수 호출
+ *     return () => {
+ *       console.log('🧹 Cleaning up order subscription');
+ *       unsubscribe();
+ *     };
+ *   }, [supabase, wholesalerId]);
+ *
+ *   return <div>대시보드</div>;
+ * }
+ * ```
+ *
+ * @dependencies
+ * - @supabase/supabase-js
+ * - types/order.ts
+ * - types/wholesaler.ts
+ * - types/inquiry.ts
+ *
+ * @see {@link ./clerk-client.ts} - 클라이언트 컴포넌트용 Supabase 클라이언트
+ * @see {@link ./server.ts} - 서버 컴포넌트용 Supabase 클라이언트
+ */
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Order } from "@/types/order";
+import type { Wholesaler } from "@/types/wholesaler";
+import type { Inquiry } from "@/types/inquiry";
+
+/**
+ * 새 주문 구독
+ *
+ * 특정 도매점에 대한 새 주문이 생성될 때 실시간으로 알림을 받습니다.
+ * orders 테이블의 INSERT 이벤트를 구독합니다.
+ *
+ * @param {SupabaseClient} supabase - Supabase 클라이언트 인스턴스
+ * @param {string} wholesalerId - 도매점 ID
+ * @param {(order: Order) => void} onNewOrder - 새 주문이 생성될 때 호출되는 콜백 함수
+ * @returns {() => void} 구독 해제 함수 (cleanup)
+ *
+ * @example
+ * ```tsx
+ * const unsubscribe = subscribeToNewOrders(
+ *   supabase,
+ *   wholesalerId,
+ *   (order) => {
+ *     toast({
+ *       title: "새 주문이 들어왔습니다! 🎉",
+ *       description: `주문번호: ${order.order_number}`,
+ *     });
+ *   }
+ * );
+ *
+ * // 나중에 구독 해제
+ * unsubscribe();
+ * ```
+ */
+export function subscribeToNewOrders(
+  supabase: SupabaseClient,
+  wholesalerId: string,
+  onNewOrder: (order: Order) => void,
+): () => void {
+  const channel = supabase
+    .channel(`new-orders-${wholesalerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "orders",
+        filter: `wholesaler_id=eq.${wholesalerId}`,
+      },
+      (payload) => {
+        console.log("🔔 새 주문 알림:", payload.new);
+        onNewOrder(payload.new as Order);
+      },
+    )
+    .subscribe();
+
+  // 반드시 cleanup 함수 반환 (메모리 누수 방지)
+  return () => {
+    console.log(
+      `🧹 Cleaning up order subscription for wholesaler: ${wholesalerId}`,
+    );
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * 주문 상태 변경 구독
+ *
+ * 특정 도매점의 주문 상태가 변경될 때 실시간으로 알림을 받습니다.
+ * orders 테이블의 UPDATE 이벤트를 구독합니다.
+ *
+ * @param {SupabaseClient} supabase - Supabase 클라이언트 인스턴스
+ * @param {string} wholesalerId - 도매점 ID
+ * @param {(order: Order) => void} onOrderUpdate - 주문 상태가 변경될 때 호출되는 콜백 함수
+ * @returns {() => void} 구독 해제 함수 (cleanup)
+ *
+ * @example
+ * ```tsx
+ * const unsubscribe = subscribeToOrderUpdates(
+ *   supabase,
+ *   wholesalerId,
+ *   (order) => {
+ *     console.log('주문 상태 변경:', order.status);
+ *     // UI 업데이트 등
+ *   }
+ * );
+ *
+ * // 나중에 구독 해제
+ * unsubscribe();
+ * ```
+ */
+export function subscribeToOrderUpdates(
+  supabase: SupabaseClient,
+  wholesalerId: string,
+  onOrderUpdate: (order: Order) => void,
+): () => void {
+  const channel = supabase
+    .channel(`order-updates-${wholesalerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "orders",
+        filter: `wholesaler_id=eq.${wholesalerId}`,
+      },
+      (payload) => {
+        console.log("🔄 주문 상태 변경 알림:", payload.new);
+        onOrderUpdate(payload.new as Order);
+      },
+    )
+    .subscribe();
+
+  // 반드시 cleanup 함수 반환 (메모리 누수 방지)
+  return () => {
+    console.log(
+      `🧹 Cleaning up order update subscription for wholesaler: ${wholesalerId}`,
+    );
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * 도매점 승인 상태 변경 구독
+ *
+ * 특정 도매점의 승인 상태가 변경될 때 실시간으로 알림을 받습니다.
+ * wholesalers 테이블의 UPDATE 이벤트를 구독합니다.
+ * 주로 승인 대기 페이지에서 사용됩니다.
+ *
+ * @param {SupabaseClient} supabase - Supabase 클라이언트 인스턴스
+ * @param {string} wholesalerId - 도매점 ID
+ * @param {(wholesaler: Wholesaler) => void} onStatusChange - 승인 상태가 변경될 때 호출되는 콜백 함수
+ * @returns {() => void} 구독 해제 함수 (cleanup)
+ *
+ * @example
+ * ```tsx
+ * const unsubscribe = subscribeToWholesalerStatus(
+ *   supabase,
+ *   wholesalerId,
+ *   (wholesaler) => {
+ *     if (wholesaler.status === 'approved') {
+ *       router.push('/wholesaler/dashboard');
+ *     }
+ *   }
+ * );
+ *
+ * // 나중에 구독 해제
+ * unsubscribe();
+ * ```
+ */
+export function subscribeToWholesalerStatus(
+  supabase: SupabaseClient,
+  wholesalerId: string,
+  onStatusChange: (wholesaler: Wholesaler) => void,
+): () => void {
+  const channel = supabase
+    .channel(`wholesaler-status-${wholesalerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "wholesalers",
+        filter: `id=eq.${wholesalerId}`,
+      },
+      (payload) => {
+        console.log("✅ 도매점 승인 상태 변경 알림:", payload.new);
+        onStatusChange(payload.new as Wholesaler);
+      },
+    )
+    .subscribe();
+
+  // 반드시 cleanup 함수 반환 (메모리 누수 방지)
+  return () => {
+    console.log(
+      `🧹 Cleaning up wholesaler status subscription: ${wholesalerId}`,
+    );
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * 새 문의 구독
+ *
+ * 특정 도매점에 대한 새 문의가 생성될 때 실시간으로 알림을 받습니다.
+ * inquiries 테이블의 INSERT 이벤트를 구독합니다.
+ *
+ * ⚠️ 주의: inquiries 테이블에 wholesaler_id가 직접 없을 수 있으므로,
+ * 실제 구현 시 문의와 도매점의 관계를 확인해야 합니다.
+ *
+ * @param {SupabaseClient} supabase - Supabase 클라이언트 인스턴스
+ * @param {string} wholesalerId - 도매점 ID (필요시 사용)
+ * @param {(inquiry: Inquiry) => void} onNewInquiry - 새 문의가 생성될 때 호출되는 콜백 함수
+ * @returns {() => void} 구독 해제 함수 (cleanup)
+ *
+ * @example
+ * ```tsx
+ * const unsubscribe = subscribeToNewInquiries(
+ *   supabase,
+ *   wholesalerId,
+ *   (inquiry) => {
+ *     toast({
+ *       title: "새 문의가 들어왔습니다",
+ *       description: inquiry.title,
+ *     });
+ *   }
+ * );
+ *
+ * // 나중에 구독 해제
+ * unsubscribe();
+ * ```
+ */
+export function subscribeToNewInquiries(
+  supabase: SupabaseClient,
+  wholesalerId: string,
+  onNewInquiry: (inquiry: Inquiry) => void,
+): () => void {
+  // ⚠️ 주의: inquiries 테이블 구조에 따라 필터를 조정해야 할 수 있습니다
+  // 현재는 모든 새 문의를 구독하지만, 도매점별 필터링이 필요하면 수정 필요
+  const channel = supabase
+    .channel(`new-inquiries-${wholesalerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "inquiries",
+        // 필터가 필요한 경우 여기에 추가
+        // filter: `wholesaler_id=eq.${wholesalerId}`,
+      },
+      (payload) => {
+        console.log("📬 새 문의 알림:", payload.new);
+        onNewInquiry(payload.new as Inquiry);
+      },
+    )
+    .subscribe();
+
+  // 반드시 cleanup 함수 반환 (메모리 누수 방지)
+  return () => {
+    console.log(`🧹 Cleaning up inquiry subscription: ${wholesalerId}`);
+    supabase.removeChannel(channel);
+  };
+}
