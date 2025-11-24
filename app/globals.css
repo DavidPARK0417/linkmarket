@@ -41,6 +41,15 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* 역할 선택 페이지용 색상 */
+  --color-background-light: var(--background-light);
+  --color-background-dark: var(--background-dark);
+  --color-container-light: var(--container-light);
+  --color-container-dark: var(--container-dark);
+  --color-text-light-primary: var(--text-light-primary);
+  --color-text-dark-primary: var(--text-dark-primary);
+  --color-text-light-secondary: var(--text-light-secondary);
+  --color-text-dark-secondary: var(--text-dark-secondary);
 }
 
 :root {
@@ -76,6 +85,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* 역할 선택 페이지용 색상 변수 */
+  --background-light: oklch(0.969 0 0); /* #f6f7f8 */
+  --background-dark: oklch(0.125 0.015 220); /* #101922 */
+  --container-light: oklch(1 0 0); /* #ffffff */
+  --container-dark: oklch(0.25 0.01 220); /* #1f2937 */
+  --text-light-primary: oklch(0.145 0 0); /* #111418 */
+  --text-dark-primary: oklch(0.941 0.01 220); /* #f0f2f4 */
+  --text-light-secondary: oklch(0.4 0.01 220); /* #617589 */
+  --text-dark-secondary: oklch(0.659 0.01 220); /* #a8b5c4 */
 }
 
 .dark {
@@ -110,6 +128,15 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  /* 역할 선택 페이지용 다크 모드 색상 변수 */
+  --background-light: oklch(0.125 0.015 220); /* #101922 */
+  --background-dark: oklch(0.125 0.015 220); /* #101922 */
+  --container-light: oklch(0.25 0.01 220); /* #1f2937 */
+  --container-dark: oklch(0.25 0.01 220); /* #1f2937 */
+  --text-light-primary: oklch(0.941 0.01 220); /* #f0f2f4 */
+  --text-dark-primary: oklch(0.941 0.01 220); /* #f0f2f4 */
+  --text-light-secondary: oklch(0.659 0.01 220); /* #a8b5c4 */
+  --text-dark-secondary: oklch(0.659 0.01 220); /* #a8b5c4 */
 }
 
 @layer base {

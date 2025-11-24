@@ -191,7 +191,13 @@ export async function getUserRole(): Promise<UserRole | null> {
  * }
  * ```
  */
-export function redirectByRole(role: UserRole): never {
+export function redirectByRole(role: UserRole | null | undefined): never {
+  // 역할이 없으면 역할 선택 페이지로 리다이렉트
+  if (!role) {
+    console.log("⚠️ [auth] redirectByRole: 역할 없음, 역할 선택 페이지로 리다이렉트");
+    redirect("/role-selection");
+  }
+
   switch (role) {
     case "retailer":
       redirect("/retailer/dashboard");
@@ -203,7 +209,7 @@ export function redirectByRole(role: UserRole): never {
       redirect("/admin/dashboard");
       break;
     default:
-      redirect("/");
+      redirect("/role-selection");
   }
 }
 

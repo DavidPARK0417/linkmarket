@@ -22,7 +22,11 @@ import { SignUp } from "@clerk/nextjs";
 export default function SignUpPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4">
-      <SignUp />
+      <SignUp
+        afterSignUpUrl="/role-selection"
+        routing="path"
+        path="/sign-up"
+      />
     </div>
   );
 }

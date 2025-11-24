@@ -10,6 +10,10 @@ export default async function Home() {
   const profile = await getUserProfile();
 
   if (profile) {
+    // 역할이 없으면 역할 선택 페이지로 리다이렉트
+    if (!profile.role) {
+      redirect("/role-selection");
+    }
     // 로그인한 사용자는 역할에 따라 대시보드로 리다이렉트
     redirectByRole(profile.role);
   }
