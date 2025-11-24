@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   {
-    href: "/admin",
+    href: "/admin/dashboard",
     label: "대시보드",
     icon: LayoutDashboard,
   },
@@ -55,9 +55,12 @@ export default function AdminSidebar() {
         <div className="flex flex-col gap-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            // 대시보드는 정확히 일치만 체크, 다른 메뉴는 경로가 시작하는지 체크
             const isActive =
-              pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
+              item.href === "/admin/dashboard"
+                ? pathname === item.href
+                : pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
 
             return (
               <Link

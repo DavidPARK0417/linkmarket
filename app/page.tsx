@@ -1,8 +1,19 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RiSupabaseFill } from "react-icons/ri";
+import { getUserProfile, redirectByRole } from "@/lib/clerk/auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  // 로그인한 사용자는 역할에 따라 대시보드로 리다이렉트
+  // 로그인하지 않은 사용자는 홈페이지를 볼 수 있음
+  const profile = await getUserProfile();
+
+  if (profile) {
+    // 로그인한 사용자는 역할에 따라 대시보드로 리다이렉트
+    redirectByRole(profile.role);
+  }
+
   return (
     <main className="min-h-[calc(100vh-80px)] flex items-center px-8 py-16 lg:py-24">
       <section className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start lg:items-center">

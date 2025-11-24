@@ -48,13 +48,28 @@ export async function POST() {
 
     console.log("📝 [sync-user] profiles 테이블 upsert 시도...");
 
+    // 기존 프로필이 있는지 확인 (role 유지하기 위해)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("clerk_user_id", clerkUser.id)
+      .single();
+
+    // 기존 role이 있으면 유지, 없으면 기본값 "retailer" 사용
+    const role = existingProfile?.role || "retailer";
+
+    console.log("📋 [sync-user] 사용할 role:", {
+      existing: existingProfile?.role,
+      final: role,
+    });
+
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .upsert(
         {
           clerk_user_id: clerkUser.id,
           email: email,
-          role: "retailer", // 기본값 (나중에 사용자 선택으로 변경 가능)
+          role: role, // 기존 role 유지, 없으면 기본값 "retailer"
           status: "active",
         },
         {
