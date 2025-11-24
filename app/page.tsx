@@ -340,7 +340,7 @@ export default async function Home() {
                 <p className="font-semibold text-gray-900 mb-2">대상:</p>
                 <p>식자재/잡화 소매점 운영자</p>
                 <p className="font-semibold text-gray-900 mb-2 mt-4">니즈:</p>
-                <p>"여러 도매를 쉽게 비교하고 싸게 사고 싶다"</p>
+                <p>&quot;여러 도매를 쉽게 비교하고 싸게 사고 싶다&quot;</p>
                 <p className="font-semibold text-gray-900 mb-2 mt-4">
                   페인 포인트:
                 </p>
@@ -355,7 +355,10 @@ export default async function Home() {
                 <p className="font-semibold text-gray-900 mb-2">대상:</p>
                 <p>전통시장, 지역 도매상</p>
                 <p className="font-semibold text-gray-900 mb-2 mt-4">니즈:</p>
-                <p>"새로운 거래처를 찾고, 주문을 온라인으로 관리하고 싶다"</p>
+                <p>
+                  &quot;새로운 거래처를 찾고, 주문을 온라인으로 관리하고
+                  싶다&quot;
+                </p>
                 <p className="font-semibold text-gray-900 mb-2 mt-4">
                   페인 포인트:
                 </p>
