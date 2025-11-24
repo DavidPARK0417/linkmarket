@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { koKR } from "@clerk/localizations";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 
 import Navbar from "@/components/Navbar";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
@@ -30,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider localization={koKR}>
-      <html lang="ko">
+      <html lang="ko" suppressHydrationWarning>
         <head>
           <link
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
@@ -40,10 +41,12 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <SyncUserProvider>
-            <Navbar />
-            {children}
-          </SyncUserProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <SyncUserProvider>
+              <Navbar />
+              {children}
+            </SyncUserProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
