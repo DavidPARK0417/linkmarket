@@ -2,14 +2,14 @@
  * @file create-wholesaler.ts
  * @description 도매점 생성 Server Action
  *
- * 도매점 회원가입 시 사업자 정보를 입력받아 `wholesalers` 테이블에 저장하고,
- * `anonymous_code`를 자동 생성하는 Server Action입니다.
+ * 도매점 회원가입 시 사업자 정보를 입력받아 `wholesalers` 테이블에 저장합니다.
+ * `anonymous_code`는 Database Trigger에서 자동으로 생성됩니다 (VENDOR-001, VENDOR-002 형식).
  *
  * 주요 기능:
  * 1. Clerk 인증 확인
  * 2. 현재 사용자의 `profile_id` 조회
- * 3. `anonymous_code` 자동 생성 (VENDOR-001, VENDOR-002 형식)
- * 4. `wholesalers` 테이블에 INSERT
+ * 3. 사업자번호 중복 확인
+ * 4. `wholesalers` 테이블에 INSERT (anonymous_code는 트리거가 자동 생성)
  * 5. 에러 처리 및 로깅
  *
  * @dependencies
@@ -53,13 +53,13 @@ export interface CreateWholesalerResult {
 /**
  * 도매점 생성 Server Action
  *
- * 사업자 정보를 입력받아 `wholesalers` 테이블에 저장하고,
- * `anonymous_code`를 자동 생성합니다.
+ * 사업자 정보를 입력받아 `wholesalers` 테이블에 저장합니다.
+ * `anonymous_code`는 Database Trigger에서 자동으로 생성됩니다.
  *
  * @param {WholesalerOnboardingFormData} formData - 폼 데이터
  * @returns {Promise<CreateWholesalerResult>} 생성 결과
  *
- * @throws {Error} 인증 실패, 프로필 없음, 중복 사업자번호, anonymous_code 생성 실패 등
+ * @throws {Error} 인증 실패, 프로필 없음, 중복 사업자번호 등
  */
 export async function createWholesaler(
   formData: WholesalerOnboardingFormData,
@@ -125,7 +125,10 @@ export async function createWholesaler(
       .single();
 
     if (duplicateError && duplicateError.code !== "PGRST116") {
-      console.error("❌ [wholesaler] 사업자번호 중복 확인 오류:", duplicateError);
+      console.error(
+        "❌ [wholesaler] 사업자번호 중복 확인 오류:",
+        duplicateError,
+      );
       return {
         success: false,
         error: "사업자번호 확인 중 오류가 발생했습니다.",
@@ -140,42 +143,14 @@ export async function createWholesaler(
       };
     }
 
-    // 4. anonymous_code 자동 생성
-    const { data: maxCode, error: maxCodeError } = await supabase
-      .from("wholesalers")
-      .select("anonymous_code")
-      .order("anonymous_code", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (maxCodeError) {
-      console.error("❌ [wholesaler] anonymous_code 최대값 조회 오류:", maxCodeError);
-      return {
-        success: false,
-        error: "코드 생성 중 오류가 발생했습니다.",
-      };
-    }
-
-    // 다음 번호 계산
-    let nextNumber = 1;
-    if (maxCode?.anonymous_code) {
-      const match = maxCode.anonymous_code.match(/VENDOR-(\d+)/);
-      if (match) {
-        nextNumber = parseInt(match[1], 10) + 1;
-      }
-    }
-
-    // 3자리 패딩 적용
-    const anonymousCode = `VENDOR-${String(nextNumber).padStart(3, "0")}`;
-    console.log("✅ [wholesaler] anonymous_code 생성:", anonymousCode);
-
-    // 5. 전화번호 포맷팅
+    // 4. 전화번호 포맷팅
     const formattedPhone = formatPhone(formData.phone);
 
-    // 6. 은행명 + 계좌번호 결합
+    // 5. 은행명 + 계좌번호 결합
     const bankAccount = `${formData.bank_name} ${formData.bank_account_number}`;
 
-    // 7. wholesalers 테이블에 INSERT
+    // 6. wholesalers 테이블에 INSERT
+    // anonymous_code는 Database Trigger에서 자동 생성됨
     const { data: newWholesaler, error: insertError } = await supabase
       .from("wholesalers")
       .insert({
@@ -186,10 +161,9 @@ export async function createWholesaler(
         phone: formattedPhone,
         address: formData.address.trim(),
         bank_account: bankAccount,
-        anonymous_code: anonymousCode,
         status: "pending",
       })
-      .select("id")
+      .select("id, anonymous_code")
       .single();
 
     if (insertError) {
@@ -204,7 +178,10 @@ export async function createWholesaler(
           };
         }
         if (insertError.message.includes("anonymous_code")) {
-          // anonymous_code 중복 (거의 발생하지 않지만 처리)
+          // anonymous_code 중복 (트리거가 자동 생성하므로 거의 발생하지 않지만 처리)
+          console.error(
+            "❌ [wholesaler] anonymous_code 중복 에러 (트리거 실패 가능성)",
+          );
           return {
             success: false,
             error: "코드 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
@@ -219,6 +196,10 @@ export async function createWholesaler(
     }
 
     console.log("✅ [wholesaler] 도매점 생성 완료:", newWholesaler.id);
+    console.log(
+      "✅ [wholesaler] anonymous_code:",
+      newWholesaler.anonymous_code,
+    );
     console.groupEnd();
 
     return {
@@ -236,4 +217,3 @@ export async function createWholesaler(
     };
   }
 }
-

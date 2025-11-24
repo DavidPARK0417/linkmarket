@@ -472,18 +472,18 @@ mkdir -p hooks
 
 #### 6. Anonymous Code 자동 생성 (필수)
 
-- [ ] **⚠️ Anonymous Code 자동 생성 로직 구현**
-  - [ ] PM과 구현 방법 협의
+- [x] **⚠️ Anonymous Code 자동 생성 로직 구현**
+  - [x] PM과 구현 방법 협의
     - [ ] Option 1: Supabase Edge Function (권장)
-    - [ ] Option 2: Database Trigger
+    - [x] Option 2: Database Trigger ✅ 선택됨
     - [ ] Option 3: 클라이언트 사이드 (보안상 비권장)
-  - [ ] 생성 형식 확정
-    - [ ] 형식: `VENDOR-001`, `VENDOR-002`, `VENDOR-003` (순차 증가)
-    - [ ] 3자리 숫자 패딩 (001, 002, ..., 999)
-  - [ ] 구현 세부사항
-    - [ ] wholesalers 테이블 INSERT 시 자동 생성
-    - [ ] 중복 방지 로직 (UNIQUE 제약)
-    - [ ] 최대 번호 조회 후 +1 증가
+  - [x] 생성 형식 확정
+    - [x] 형식: `VENDOR-001`, `VENDOR-002`, `VENDOR-003` (순차 증가)
+    - [x] 3자리 숫자 패딩 (001, 002, ..., 999)
+  - [x] 구현 세부사항
+    - [x] wholesalers 테이블 INSERT 시 자동 생성 (Database Trigger로 구현)
+    - [x] 중복 방지 로직 (UNIQUE 제약 + advisory lock 사용)
+    - [x] 최대 번호 조회 후 +1 증가
   - [ ] 테스트
     - [ ] 여러 계정 동시 생성 시 중복 없는지 확인
     - [ ] 온보딩 완료 후 anonymous_code 확인
