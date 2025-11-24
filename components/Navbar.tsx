@@ -15,7 +15,6 @@ const Navbar = () => {
   const supabase = useClerkSupabaseClient();
   const [isApprovedWholesaler, setIsApprovedWholesaler] = useState(false);
   const [wholesalerStatus, setWholesalerStatus] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(true);
 
   // 승인된 도매사업자 여부 및 상태 확인
   useEffect(() => {
@@ -23,7 +22,6 @@ const Navbar = () => {
       if (!isLoaded || !isSignedIn || !user) {
         setIsApprovedWholesaler(false);
         setWholesalerStatus(null);
-        setIsChecking(false);
         return;
       }
 
@@ -41,7 +39,6 @@ const Navbar = () => {
           console.log("⚠️ [navbar] 프로필 없음 또는 오류:", profileError);
           setIsApprovedWholesaler(false);
           setWholesalerStatus(null);
-          setIsChecking(false);
           return;
         }
 
@@ -70,8 +67,6 @@ const Navbar = () => {
         console.error("❌ [navbar] 도매사업자 상태 확인 오류:", error);
         setIsApprovedWholesaler(false);
         setWholesalerStatus(null);
-      } finally {
-        setIsChecking(false);
       }
     };
 

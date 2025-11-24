@@ -58,7 +58,7 @@ export default function PendingApprovalPage() {
   const supabase = useClerkSupabaseClient();
 
   const [status, setStatus] = useState<
-    "pending" | "approved" | "rejected" | "loading" | "error"
+    "pending" | "approved" | "rejected" | "suspended" | "loading" | "error"
   >("loading");
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [wholesalerId, setWholesalerId] = useState<string | null>(null);
