@@ -6,6 +6,7 @@ import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { Button } from "@/components/ui/button";
 import { LuShield, LuCheck, LuX, LuTriangleAlert } from "react-icons/lu";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ProfileData {
   id: string;
@@ -462,9 +463,11 @@ export default function AuthTestPage() {
                   <div className="flex gap-2">
                     <span className="font-semibold min-w-[150px]">아바타:</span>
                     {userData.avatar_url ? (
-                      <img
+                      <Image
                         src={userData.avatar_url}
                         alt="Avatar"
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full"
                       />
                     ) : (

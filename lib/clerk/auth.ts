@@ -28,7 +28,7 @@
  * @see {@link ../supabase/server.ts} - Supabase 클라이언트
  */
 
-import { currentUser, auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { createClerkSupabaseClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/types/database";
