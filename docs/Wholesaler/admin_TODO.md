@@ -56,12 +56,12 @@
 
 **파일**: `lib/clerk/auth.ts`
 
-- [ ] **requireAdmin() 함수 추가**
-  - [ ] `requireAuth()`를 먼저 호출하여 인증 확인
-  - [ ] `role`이 `'admin'`이 아니면 홈(`'/'`)으로 리다이렉트
-  - [ ] 관리자인 경우 `ProfileWithDetails` 반환
-  - [ ] JSDoc 주석 추가
-  - [ ] 에러 처리 및 로깅
+- [x] **requireAdmin() 함수 추가**
+  - [x] `requireAuth()`를 먼저 호출하여 인증 확인
+  - [x] `role`이 `'admin'`이 아니면 홈(`'/'`)으로 리다이렉트
+  - [x] 관리자인 경우 `ProfileWithDetails` 반환
+  - [x] JSDoc 주석 추가
+  - [x] 에러 처리 및 로깅
 
 **커서 AI 프롬프트:**
 
