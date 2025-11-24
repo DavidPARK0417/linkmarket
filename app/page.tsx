@@ -39,14 +39,41 @@ export default async function Home() {
   // 로그인한 사용자는 역할에 따라 대시보드로 리다이렉트
   const profile = await getUserProfile();
 
-  if (profile) {
-    // 역할이 없으면 역할 선택 페이지로 리다이렉트
-    if (!profile.role) {
-      redirect("/role-selection");
+  // pending 상태인 도매업자인지 확인 (버튼 링크 동적 변경용)
+  let isPendingWholesaler = false;
+  if (
+    profile &&
+    profile.role === "wholesaler" &&
+    profile.wholesalers &&
+    profile.wholesalers.length > 0
+  ) {
+    const wholesaler = profile.wholesalers[0];
+    if (wholesaler && wholesaler.status === "pending") {
+      isPendingWholesaler = true;
     }
-    // 로그인한 사용자는 역할에 따라 대시보드로 리다이렉트
-    redirectByRole(profile.role);
   }
+
+  if (profile && profile.role) {
+    // 도매업자이고 pending 상태인 경우 리다이렉트하지 않음 (승인 대기 중)
+    if (
+      profile.role === "wholesaler" &&
+      profile.wholesalers &&
+      profile.wholesalers.length > 0
+    ) {
+      const wholesaler = profile.wholesalers[0];
+      if (wholesaler && wholesaler.status === "pending") {
+        console.log("⚠️ [home] 도매업자 승인 대기 중, 메인페이지 유지");
+        // pending 상태인 경우 리다이렉트하지 않고 메인페이지 표시
+      } else {
+        // 승인된 도매업자는 대시보드로 리다이렉트
+        redirectByRole(profile.role);
+      }
+    } else {
+      // 다른 역할(소매업자, 관리자)은 대시보드로 리다이렉트
+      redirectByRole(profile.role);
+    }
+  }
+  // 역할이 없는 사용자는 메인 페이지에서 역할 선택 가능
 
   // 목업 상품 데이터
   const recommendedProducts = [
@@ -155,7 +182,14 @@ export default async function Home() {
                     </span>
                   </div>
                 </div>
-                <Link href="/sign-in/retailer" className="mt-auto">
+                <Link
+                  href={
+                    isPendingWholesaler
+                      ? "/pending-approval"
+                      : "/sign-in/retailer"
+                  }
+                  className="mt-auto"
+                >
                   <Button className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-lg">
                     소매업자로 시작하기
                   </Button>
@@ -192,7 +226,14 @@ export default async function Home() {
                     </span>
                   </div>
                 </div>
-                <Link href="/sign-in/wholesaler" className="mt-auto">
+                <Link
+                  href={
+                    isPendingWholesaler
+                      ? "/pending-approval"
+                      : "/sign-in/wholesaler"
+                  }
+                  className="mt-auto"
+                >
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg">
                     도매업자로 시작하기
                   </Button>

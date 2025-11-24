@@ -157,7 +157,7 @@ function getRedirectUrl(role: UserRole): string {
     case "retailer":
       return "/retailer/dashboard";
     case "wholesaler":
-      return "/wholesaler/onboarding";
+      return "/wholesaler-onboarding"; // 하이픈 추가 (올바른 경로)
     case "admin":
       return "/admin/dashboard";
     default:

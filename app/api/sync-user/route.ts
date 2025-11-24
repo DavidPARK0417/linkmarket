@@ -53,10 +53,10 @@ export async function POST() {
       .from("profiles")
       .select("role")
       .eq("clerk_user_id", clerkUser.id)
-      .single();
+      .maybeSingle();
 
-    // 기존 role이 있으면 유지, 없으면 기본값 "retailer" 사용
-    const role = existingProfile?.role || "retailer";
+    // 기존 role이 있으면 유지, 없으면 NULL (역할 선택 페이지에서 설정)
+    const role = existingProfile?.role || null;
 
     console.log("📋 [sync-user] 사용할 role:", {
       existing: existingProfile?.role,
@@ -69,7 +69,7 @@ export async function POST() {
         {
           clerk_user_id: clerkUser.id,
           email: email,
-          role: role, // 기존 role 유지, 없으면 기본값 "retailer"
+          role: role, // 기존 role 유지, 없으면 NULL (역할 선택 페이지에서 설정)
           status: "active",
         },
         {
@@ -80,12 +80,28 @@ export async function POST() {
       .single();
 
     if (profileError) {
-      console.error("❌ [sync-user] profiles 동기화 실패:", profileError);
+      // 상세 에러 정보 로깅
+      console.error("❌ [sync-user] profiles 동기화 실패:", {
+        error: profileError,
+        code: profileError.code,
+        message: profileError.message,
+        details: profileError.details,
+        hint: profileError.hint,
+        // 추가 디버깅 정보
+        attemptedData: {
+          clerk_user_id: clerkUser.id,
+          email: email,
+          role: role,
+          status: "active",
+        },
+      });
+
       return NextResponse.json(
         {
           error: "Failed to sync profile",
           details: profileError.message,
-          hint: "Supabase Dashboard에서 profiles 테이블이 존재하는지 확인하세요",
+          code: profileError.code,
+          hint: "Supabase Dashboard에서 profiles 테이블이 존재하는지 확인하세요. role 컬럼이 NULL을 허용하는지 확인하세요. SQL Editor에서 마이그레이션을 실행했는지 확인하세요. (supabase/SQL_EDITOR_allow_null_role.sql 파일 참고)",
         },
         { status: 500 },
       );

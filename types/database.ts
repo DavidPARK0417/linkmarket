@@ -76,7 +76,7 @@ export interface Profile {
   id: string;
   clerk_user_id: string;
   email: string;
-  role: UserRole;
+  role: UserRole | null; // 역할 선택 전까지 NULL 허용
   status: UserStatus;
   created_at: string;
   updated_at: string;

@@ -10,7 +10,7 @@
  * 2. 로그인하지 않은 경우 /sign-in으로 리다이렉트
  * 3. Supabase에서 wholesalers 정보 조회
  * 4. wholesaler 정보가 없으면 /wholesaler-onboarding으로 리다이렉트
- * 5. status = 'pending' 또는 'rejected'이면 /wholesaler/pending-approval로 리다이렉트
+ * 5. status = 'pending' 또는 'rejected'이면 /pending-approval로 리다이렉트
  * 6. status = 'suspended'이면 /wholesaler/suspended로 리다이렉트
  * 7. status = 'approved'인 경우에만 대시보드 접근 허용
  * 8. 레이아웃 구조 설정 (Sidebar + Header + Main Content)
@@ -96,7 +96,7 @@ export default async function WholesalerLayout({
     console.log(
       "⏳ [wholesaler-layout] 승인 대기/반려 상태, 승인 대기 페이지로 리다이렉트",
     );
-    redirect("/wholesaler/pending-approval");
+    redirect("/pending-approval");
   }
 
   // 7. status = 'suspended'이면 정지 페이지로 리다이렉트

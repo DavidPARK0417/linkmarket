@@ -4,9 +4,12 @@
  *
  * 소매업자를 위한 커스텀 로그인 페이지입니다.
  * Clerk SignIn 컴포넌트를 사용하며, 역할 표시 배너를 포함합니다.
+ *
+ * 개선 사항 (v2):
+ * - 로그인 후 대시보드로 바로 이동
+ * - 회원가입 링크에 역할 구분 파라미터 추가
  */
 
-import { SignIn } from "@clerk/nextjs";
 import {
   Card,
   CardContent,
@@ -15,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
+import SignInWithRedirect from "@/components/auth/sign-in-with-redirect";
 
 export default function RetailerSignInPage() {
   return (
@@ -32,21 +36,21 @@ export default function RetailerSignInPage() {
           </CardHeader>
         </Card>
         <div className="flex justify-center">
-          <SignIn
+          <SignInWithRedirect
             appearance={{
               elements: {
                 rootBox: "mx-auto",
                 card: "shadow-lg",
               },
             }}
-            routing="path"
             path="/sign-in/retailer"
-            signUpUrl="/sign-up"
+            signUpUrl="/sign-up?type=retailer"
             afterSignInUrl="/retailer/dashboard"
+            forceRedirectUrl="/retailer/dashboard"
+            redirectToSignUpUrl="/sign-up?type=retailer"
           />
         </div>
       </div>
     </div>
   );
 }
-

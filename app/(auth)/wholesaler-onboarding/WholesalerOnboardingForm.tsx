@@ -31,7 +31,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -59,6 +59,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   wholesalerOnboardingSchema,
   type WholesalerOnboardingFormData,
 } from "@/lib/validation/wholesaler";
@@ -69,6 +77,7 @@ import { formatPhone } from "@/lib/utils/format";
 export default function WholesalerOnboardingForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const form = useForm<WholesalerOnboardingFormData>({
     resolver: zodResolver(wholesalerOnboardingSchema),
@@ -123,10 +132,9 @@ export default function WholesalerOnboardingForm() {
       }
 
       console.log("✅ [wholesaler-onboarding] 도매점 생성 성공:", result.wholesalerId);
-      toast.success("사업자 정보가 등록되었습니다. 승인 대기 중입니다.");
 
-      // 성공 시 승인 대기 페이지로 리다이렉트
-      router.push("/wholesaler/pending-approval");
+      // 성공 시 완료 모달 표시
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("❌ [wholesaler-onboarding] 폼 제출 예외:", error);
       toast.error(
@@ -139,8 +147,41 @@ export default function WholesalerOnboardingForm() {
     }
   };
 
+  // 완료 모달 확인 핸들러
+  const handleSuccessConfirm = () => {
+    setShowSuccessModal(false);
+    router.push("/");
+  };
+
   return (
     <div className="w-full">
+      {/* 완료 모달 */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="w-16 h-16 text-green-500" />
+            </div>
+            <DialogTitle className="text-center text-xl">
+              등록 완료
+            </DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              사업자 정보가 성공적으로 등록되었습니다.
+              <br />
+              관리자 승인을 기다려주세요.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Button
+              onClick={handleSuccessConfirm}
+              className="w-full sm:w-auto min-w-[120px] bg-blue-600 hover:bg-blue-700"
+            >
+              확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 진행 표시 */}
       <div className="mb-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">

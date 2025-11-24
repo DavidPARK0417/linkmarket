@@ -7,10 +7,11 @@
  *
  * 주요 기능:
  * 1. Clerk 인증 확인
- * 2. 현재 사용자의 `profile_id` 조회
- * 3. 사업자번호 중복 확인
- * 4. `wholesalers` 테이블에 INSERT (anonymous_code는 트리거가 자동 생성)
- * 5. 에러 처리 및 로깅
+ * 2. role이 null이면 'wholesaler'로 자동 설정
+ * 3. 현재 사용자의 `profile_id` 조회
+ * 4. 사업자번호 중복 확인
+ * 5. `wholesalers` 테이블에 INSERT (anonymous_code는 트리거가 자동 생성)
+ * 6. 에러 처리 및 로깅
  *
  * @dependencies
  * - lib/clerk/auth.ts (getUserProfile)
@@ -55,6 +56,7 @@ export interface CreateWholesalerResult {
  *
  * 사업자 정보를 입력받아 `wholesalers` 테이블에 저장합니다.
  * `anonymous_code`는 Database Trigger에서 자동으로 생성됩니다.
+ * role이 null인 경우 자동으로 'wholesaler'로 설정합니다.
  *
  * @param {WholesalerOnboardingFormData} formData - 폼 데이터
  * @returns {Promise<CreateWholesalerResult>} 생성 결과
@@ -79,12 +81,34 @@ export async function createWholesaler(
       };
     }
 
-    if (profile.role !== "wholesaler") {
+    // role이 null이 아니고 wholesaler가 아니면 에러
+    if (profile.role !== null && profile.role !== "wholesaler") {
       console.error("❌ [wholesaler] 도매점 역할이 아닌 사용자:", profile.role);
       return {
         success: false,
         error: "도매점 회원만 사용할 수 있는 기능입니다.",
       };
+    }
+
+    // role이 null이면 wholesaler로 설정
+    if (profile.role === null) {
+      console.log("📝 [wholesaler] 역할 없음, wholesaler로 설정 시작");
+
+      const supabaseForRoleUpdate = getServiceRoleClient();
+      const { error: updateError } = await supabaseForRoleUpdate
+        .from("profiles")
+        .update({ role: "wholesaler" })
+        .eq("id", profile.id);
+
+      if (updateError) {
+        console.error("❌ [wholesaler] 역할 설정 실패:", updateError);
+        return {
+          success: false,
+          error: "역할 설정 중 오류가 발생했습니다. 다시 시도해주세요.",
+        };
+      }
+
+      console.log("✅ [wholesaler] 역할 설정 완료: wholesaler");
     }
 
     console.log("✅ [wholesaler] 인증 확인 완료, profile_id:", profile.id);

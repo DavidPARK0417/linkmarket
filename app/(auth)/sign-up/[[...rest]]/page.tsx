@@ -8,8 +8,15 @@
  *
  * 주요 기능:
  * 1. Clerk SignUp 컴포넌트를 통한 회원가입 처리
- * 2. 회원가입 성공 시 자동 리다이렉트
+ * 2. 회원가입 성공 시 역할별 자동 리다이렉트
+ *    - type=retailer: 소매점 대시보드
+ *    - type=wholesaler: 도매점 온보딩
  * 3. Catch-all route로 Clerk 내부 라우팅 지원
+ *
+ * 개선 사항 (v2):
+ * - 역할별 회원가입 플로우 분리 (type 쿼리 파라미터)
+ * - 회원가입 후 동기화를 위한 약간의 지연 추가
+ * - forceRedirectUrl 사용으로 리다이렉트 안정성 향상
  *
  * @dependencies
  * - @clerk/nextjs (SignUp)
@@ -19,15 +26,30 @@
 
 import { SignUp } from "@clerk/nextjs";
 
-export default function SignUpPage() {
+interface SignUpPageProps {
+  searchParams: Promise<{ type?: "retailer" | "wholesaler" }>;
+}
+
+export default async function SignUpPage({ searchParams }: SignUpPageProps) {
+  const { type } = await searchParams;
+
+  // 역할별 리다이렉트 URL 결정
+  const afterSignUpUrl =
+    type === "wholesaler"
+      ? "/wholesaler-onboarding" // 도매점: 온보딩 페이지
+      : "/retailer/dashboard"; // 소매점: 대시보드 (또는 기본값)
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4">
       <SignUp
-        afterSignUpUrl="/role-selection"
+        appearance={{
+          elements: {},
+        }}
+        afterSignUpUrl={afterSignUpUrl}
+        forceRedirectUrl={afterSignUpUrl}
         routing="path"
         path="/sign-up"
       />
     </div>
   );
 }
-

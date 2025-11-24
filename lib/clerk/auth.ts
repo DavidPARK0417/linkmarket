@@ -110,7 +110,22 @@ export async function getUserProfile(): Promise<ProfileWithDetails | null> {
       .single();
 
     if (error) {
-      console.error("❌ [auth] getUserProfile 오류:", error);
+      // PGRST116은 "no rows returned" 에러 (프로필이 없는 경우, 정상)
+      if (error.code === "PGRST116") {
+        console.log(
+          "⚠️ [auth] getUserProfile: 프로필 없음 (정상 - 신규 사용자)",
+        );
+        return null;
+      }
+
+      // 다른 에러는 상세 로깅
+      console.error("❌ [auth] getUserProfile 오류:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        error,
+      });
       return null;
     }
 
@@ -121,7 +136,10 @@ export async function getUserProfile(): Promise<ProfileWithDetails | null> {
 
     return profile as ProfileWithDetails;
   } catch (error) {
-    console.error("❌ [auth] getUserProfile 예외:", error);
+    console.error("❌ [auth] getUserProfile 예외:", {
+      message: error instanceof Error ? error.message : "알 수 없는 오류",
+      error,
+    });
     return null;
   }
 }
@@ -194,7 +212,9 @@ export async function getUserRole(): Promise<UserRole | null> {
 export function redirectByRole(role: UserRole | null | undefined): never {
   // 역할이 없으면 역할 선택 페이지로 리다이렉트
   if (!role) {
-    console.log("⚠️ [auth] redirectByRole: 역할 없음, 역할 선택 페이지로 리다이렉트");
+    console.log(
+      "⚠️ [auth] redirectByRole: 역할 없음, 역할 선택 페이지로 리다이렉트",
+    );
     redirect("/role-selection");
   }
 

@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { koKR } from "@clerk/localizations";
+import type { LocalizationResource } from "@clerk/types";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import Navbar from "@/components/Navbar";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
 import "./globals.css";
+
+// FarmToBiz 브랜딩을 위한 커스텀 localization
+const customKoKR: LocalizationResource = {
+  ...koKR,
+  socialButtonsBlockButton: "FarmToBiz로 계속",
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider localization={koKR}>
+    <ClerkProvider localization={customKoKR}>
       <html lang="ko">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
