@@ -2,7 +2,7 @@
 
 > **프로젝트**: AI 기반 B2B 도매-소매 중개 플랫폼  
 > **개발 방식**: 커서 AI 바이브 코딩  
-> **최종 업데이트**: 2025-01-XX  
+> **최종 업데이트**: 2025-01-27  
 > **참고 문서**: [관리자 페이지 가이드라인](./admin.md)
 
 ---
@@ -50,7 +50,7 @@
 
 ---
 
-### 2단계: 관리자 권한 체크 함수 추가
+### 2단계: 관리자 권한 체크 함수 추가 ✅ 완료
 
 **목적**: 관리자만 접근할 수 있도록 권한 체크 함수 구현
 
@@ -83,7 +83,7 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 
 ---
 
-### 3단계: 관리자 레이아웃 생성
+### 3단계: 관리자 레이아웃 생성 ✅ 완료
 
 **목적**: 모든 관리자 페이지를 보호하는 레이아웃 생성
 
@@ -123,33 +123,33 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 
 ---
 
-### 4단계: 도매 승인 대기 목록 페이지
+### 4단계: 도매 승인 대기 목록 페이지 ✅ 완료
 
 **목적**: 승인 대기 중인 도매사업자 목록을 조회하고 표시
 
 **파일**: `app/admin/wholesalers/pending/page.tsx`
 
-- [ ] **페이지 기본 구조**
+- [x] **페이지 기본 구조**
 
-  - [ ] `requireAdmin()`으로 권한 체크
-  - [ ] 페이지 타이틀 ("도매 승인 대기 목록")
+  - [x] `requireAdmin()`으로 권한 체크
+  - [x] 페이지 타이틀 ("도매 승인 대기 목록")
 
-- [ ] **데이터 조회**
+- [x] **데이터 조회**
 
-  - [ ] `wholesalers` 테이블에서 `status='pending'` 조회
-  - [ ] `profiles` 테이블과 조인하여 이메일 정보 포함
-  - [ ] 정렬: `created_at DESC` (최신순)
-  - [ ] 에러 처리
+  - [x] `wholesalers` 테이블에서 `status='pending'` 조회
+  - [x] `profiles` 테이블과 조인하여 이메일 정보 포함
+  - [x] 정렬: `created_at DESC` (최신순)
+  - [x] 에러 처리
 
-- [ ] **UI 구현**
-  - [ ] 테이블 형태로 표시
-    - [ ] 상호명
-    - [ ] 사업자번호
-    - [ ] 대표자
-    - [ ] 이메일
-    - [ ] 신청일 (날짜 포맷팅)
-    - [ ] 액션 (상세보기 링크)
-  - [ ] 빈 목록 처리 ("승인 대기 중인 도매사업자가 없습니다.")
+- [x] **UI 구현**
+  - [x] 테이블 형태로 표시
+    - [x] 상호명
+    - [x] 사업자번호
+    - [x] 대표자
+    - [x] 이메일
+    - [x] 신청일 (날짜 포맷팅)
+    - [x] 액션 (상세보기 링크)
+  - [x] 빈 목록 처리 ("승인 대기 중인 도매사업자가 없습니다.")
   - [ ] 로딩 상태 처리 (선택사항)
 
 **커서 AI 프롬프트:**
@@ -173,44 +173,44 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 
 - [ ] 승인 대기 목록이 정상적으로 표시되는지 확인
 - [ ] 빈 목록일 때 적절한 메시지가 표시되는지 확인
-- [ ] 상세보기 링크가 정상 작동하는지 확인
+- [x] 상세보기 링크가 정상 작동하는지 확인
 
 ---
 
-### 5단계: 도매 상세 페이지
+### 5단계: 도매 상세 페이지 ✅ 완료
 
 **목적**: 도매사업자의 상세 정보를 확인하고 승인/반려 처리
 
 **파일**: `app/admin/wholesalers/[id]/page.tsx`
 
-- [ ] **페이지 기본 구조**
+- [x] **페이지 기본 구조**
 
-  - [ ] `requireAdmin()`으로 권한 체크
-  - [ ] Next.js 15 동적 라우트 파라미터 처리 (`await params`)
-  - [ ] "목록으로" 링크
+  - [x] `requireAdmin()`으로 권한 체크
+  - [x] Next.js 15 동적 라우트 파라미터 처리 (`await params`)
+  - [x] "목록으로" 링크
 
-- [ ] **데이터 조회**
+- [x] **데이터 조회**
 
-  - [ ] 도매사업자 ID로 전체 정보 조회
-  - [ ] `profiles` 테이블과 조인하여 이메일 정보 포함
-  - [ ] 이미 승인/반려된 경우 목록으로 리다이렉트
-  - [ ] 존재하지 않는 경우 `notFound()` 처리
+  - [x] 도매사업자 ID로 전체 정보 조회
+  - [x] `profiles` 테이블과 조인하여 이메일 정보 포함
+  - [x] 이미 승인/반려된 경우 목록으로 리다이렉트
+  - [x] 존재하지 않는 경우 `notFound()` 처리
 
-- [ ] **사업자 정보 표시**
+- [x] **사업자 정보 표시**
 
-  - [ ] 상호명
-  - [ ] 사업자번호
-  - [ ] 대표자
-  - [ ] 연락처
-  - [ ] 이메일
-  - [ ] 주소
-  - [ ] 계좌정보
-  - [ ] 익명 코드
-  - [ ] 신청일
+  - [x] 상호명
+  - [x] 사업자번호
+  - [x] 대표자
+  - [x] 연락처
+  - [x] 이메일
+  - [x] 주소
+  - [x] 계좌정보
+  - [x] 익명 코드
+  - [x] 신청일
 
-- [ ] **승인/반려 폼 컴포넌트 연결**
-  - [ ] `WholesalerApprovalForm` 컴포넌트 사용
-  - [ ] `wholesalerId`, `adminId` props 전달
+- [x] **승인/반려 폼 컴포넌트 연결**
+  - [x] `WholesalerApprovalForm` 컴포넌트 사용
+  - [x] `wholesalerId`, `adminId` props 전달
 
 **커서 AI 프롬프트:**
 
@@ -236,47 +236,47 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 
 ---
 
-### 6단계: 승인/반려 Server Action
+### 6단계: 승인/반려 Server Action ✅ 완료
 
 **목적**: 도매사업자 승인/반려 처리 및 감사 로그 기록
 
 **파일**: `actions/admin/wholesaler-approval.ts`
 
-- [ ] **IP 주소 추출 함수**
+- [x] **IP 주소 추출 함수**
 
-  - [ ] `headers()`에서 IP 주소 추출
-  - [ ] `x-forwarded-for` 또는 `x-real-ip` 헤더 확인
-  - [ ] 프록시 환경 고려
+  - [x] `headers()`에서 IP 주소 추출
+  - [x] `x-forwarded-for` 또는 `x-real-ip` 헤더 확인
+  - [x] 프록시 환경 고려
 
-- [ ] **approveWholesaler() 함수**
+- [x] **approveWholesaler() 함수**
 
-  - [ ] `wholesalers.status`를 `'approved'`로 업데이트
-  - [ ] `approved_at` 현재 시간으로 설정
-  - [ ] `rejection_reason`을 `null`로 설정
-  - [ ] `audit_logs` 테이블에 기록
-    - [ ] `action`: `'wholesaler_approve'`
-    - [ ] `target_type`: `'wholesaler'`
-    - [ ] `target_id`: `wholesalerId`
-    - [ ] `details`: JSONB (wholesaler_id, approved_at)
-    - [ ] `ip_address`: 추출한 IP 주소
-  - [ ] 에러 처리 및 로깅
-  - [ ] `revalidatePath()`로 캐시 무효화
-  - [ ] 목록 페이지로 리다이렉트
+  - [x] `wholesalers.status`를 `'approved'`로 업데이트
+  - [x] `approved_at` 현재 시간으로 설정
+  - [x] `rejection_reason`을 `null`로 설정
+  - [x] `audit_logs` 테이블에 기록
+    - [x] `action`: `'wholesaler_approve'`
+    - [x] `target_type`: `'wholesaler'`
+    - [x] `target_id`: `wholesalerId`
+    - [x] `details`: JSONB (wholesaler_id, approved_at)
+    - [x] `ip_address`: 추출한 IP 주소
+  - [x] 에러 처리 및 로깅
+  - [x] `revalidatePath()`로 캐시 무효화
+  - [x] 목록 페이지로 리다이렉트
 
-- [ ] **rejectWholesaler() 함수**
-  - [ ] 반려 사유 유효성 검증 (최소 10자)
-  - [ ] `wholesalers.status`를 `'rejected'`로 업데이트
-  - [ ] `rejection_reason` 저장
-  - [ ] `approved_at`을 `null`로 설정
-  - [ ] `audit_logs` 테이블에 기록
-    - [ ] `action`: `'wholesaler_reject'`
-    - [ ] `target_type`: `'wholesaler'`
-    - [ ] `target_id`: `wholesalerId`
-    - [ ] `details`: JSONB (wholesaler_id, rejection_reason, rejected_at)
-    - [ ] `ip_address`: 추출한 IP 주소
-  - [ ] 에러 처리 및 로깅
-  - [ ] `revalidatePath()`로 캐시 무효화
-  - [ ] 목록 페이지로 리다이렉트
+- [x] **rejectWholesaler() 함수**
+  - [x] 반려 사유 유효성 검증 (최소 10자)
+  - [x] `wholesalers.status`를 `'rejected'`로 업데이트
+  - [x] `rejection_reason` 저장
+  - [x] `approved_at`을 `null`로 설정
+  - [x] `audit_logs` 테이블에 기록
+    - [x] `action`: `'wholesaler_reject'`
+    - [x] `target_type`: `'wholesaler'`
+    - [x] `target_id`: `wholesalerId`
+    - [x] `details`: JSONB (wholesaler_id, rejection_reason, rejected_at)
+    - [x] `ip_address`: 추출한 IP 주소
+  - [x] 에러 처리 및 로깅
+  - [x] `revalidatePath()`로 캐시 무효화
+  - [x] 목록 페이지로 리다이렉트
 
 **커서 AI 프롬프트:**
 
@@ -302,34 +302,34 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 
 ---
 
-### 7단계: 승인/반려 폼 컴포넌트
+### 7단계: 승인/반려 폼 컴포넌트 ✅ 완료
 
 **목적**: 승인/반려 버튼 및 반려 사유 입력 폼 UI
 
 **파일**: `components/admin/WholesalerApprovalForm.tsx`
 
-- [ ] **컴포넌트 기본 구조**
+- [x] **컴포넌트 기본 구조**
 
-  - [ ] Client Component (`"use client"`)
-  - [ ] `wholesalerId`, `adminId` props
-  - [ ] 로딩 상태 관리 (`isApproving`, `isRejecting`)
+  - [x] Client Component (`"use client"`)
+  - [x] `wholesalerId`, `adminId` props
+  - [x] 로딩 상태 관리 (`isApproving`, `isRejecting`)
 
-- [ ] **승인 버튼**
+- [x] **승인 버튼**
 
-  - [ ] 확인 모달 (`confirm()` 또는 Dialog)
-  - [ ] `approveWholesaler()` Server Action 호출
-  - [ ] 로딩 상태 표시
-  - [ ] 에러 처리 및 알림
+  - [x] 확인 모달 (`confirm()` 또는 Dialog)
+  - [x] `approveWholesaler()` Server Action 호출
+  - [x] 로딩 상태 표시
+  - [x] 에러 처리 및 알림
 
-- [ ] **반려 버튼 및 모달**
-  - [ ] Dialog 컴포넌트 사용
-  - [ ] react-hook-form으로 폼 관리
-  - [ ] zod 스키마 검증
-    - [ ] 반려 사유: 최소 10자, 최대 500자
-  - [ ] `rejectWholesaler()` Server Action 호출
-  - [ ] 로딩 상태 표시
-  - [ ] 에러 처리 및 알림
-  - [ ] 폼 리셋
+- [x] **반려 버튼 및 모달**
+  - [x] Dialog 컴포넌트 사용
+  - [x] react-hook-form으로 폼 관리
+  - [x] zod 스키마 검증
+    - [x] 반려 사유: 최소 10자, 최대 500자
+  - [x] `rejectWholesaler()` Server Action 호출
+  - [x] 로딩 상태 표시
+  - [x] 에러 처리 및 알림
+  - [x] 폼 리셋
 
 **커서 AI 프롬프트:**
 
@@ -417,7 +417,7 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 - [ ] 감사 로그 조회 페이지 (`/admin/audit-logs`)
 - [ ] CS 티켓 관리 페이지 (`/admin/cs/tickets`)
 - [ ] 계정 관리 페이지 (`/admin/users`)
-- [ ] 관리자 대시보드 (`/admin/dashboard`)
+- [x] 관리자 대시보드 (`/admin/dashboard`) ✅ 완료
 
 ---
 
@@ -431,4 +431,4 @@ lib/clerk/auth.ts 파일에 관리자 권한 체크 함수를 추가해줘.
 ---
 
 **작성일**: 2025-01-XX  
-**최종 업데이트**: 2025-01-XX
+**최종 업데이트**: 2025-01-27
