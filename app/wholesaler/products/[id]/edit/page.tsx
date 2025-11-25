@@ -1,0 +1,64 @@
+/**
+ * @file app/wholesaler/products/[id]/edit/page.tsx
+ * @description 상품 수정 페이지
+ *
+ * 도매점 상품을 수정하는 페이지입니다.
+ *
+ * 주요 기능:
+ * 1. 상품 ID로 기존 데이터 조회
+ * 2. ProductForm 컴포넌트를 사용한 상품 수정 폼
+ * 3. 이미지 업로드 처리
+ * 4. products 테이블에 데이터 UPDATE
+ * 5. 성공 시 상품 목록 페이지로 리다이렉트
+ *
+ * @dependencies
+ * - components/wholesaler/Products/ProductForm.tsx
+ * - actions/wholesaler/update-product.ts
+ * - lib/supabase/queries/products.ts (getProductById)
+ * - lib/supabase/server.ts (createClerkSupabaseClient)
+ * - types/product.ts
+ */
+
+import { notFound } from "next/navigation";
+import { getProductById } from "@/lib/supabase/queries/products";
+import EditProductClient from "./edit-product-client";
+
+/**
+ * 상품 수정 페이지 (Server Component)
+ *
+ * Next.js 15의 await params를 사용하여 상품 ID를 받아옵니다.
+ * 서버에서 상품 데이터를 먼저 조회하고, 존재하지 않으면 notFound()를 호출합니다.
+ */
+export default async function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // Next.js 15: params는 Promise이므로 await 필요
+  const { id } = await params;
+
+  console.group("📝 [edit-product-page] 상품 수정 페이지 접근");
+  console.log("productId:", id);
+
+  try {
+    // 1. 상품 데이터 조회
+    const product = await getProductById(id);
+
+    if (!product) {
+      console.log("⚠️ [edit-product-page] 상품 없음:", id);
+      console.groupEnd();
+      notFound();
+    }
+
+    console.log("✅ [edit-product-page] 상품 조회 완료:", product.id);
+    console.groupEnd();
+
+    // 2. Client Component로 전달
+    return <EditProductClient product={product} />;
+  } catch (error) {
+    console.error("❌ [edit-product-page] 상품 조회 예외:", error);
+    console.groupEnd();
+    notFound();
+  }
+}
+
