@@ -21,6 +21,7 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -36,6 +37,7 @@ import {
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 
 const menuItems = [
   {
@@ -78,6 +80,59 @@ const menuItems = [
 export default function WholesalerSidebar() {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
+  const [businessName, setBusinessName] = useState<string | null>(null);
+
+  // 도매회원사 상호명 조회
+  useEffect(() => {
+    const fetchBusinessName = async () => {
+      if (!user || !isLoaded) return;
+
+      try {
+        console.log("🔍 [wholesaler-sidebar] 상호명 조회 시작");
+
+        // 프로필 조회
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("clerk_user_id", user.id)
+          .single();
+
+        if (profileError || !profile) {
+          console.error(
+            "❌ [wholesaler-sidebar] 프로필 조회 오류:",
+            profileError,
+          );
+          return;
+        }
+
+        // wholesaler 정보 조회
+        const { data: wholesaler, error: wholesalerError } = await supabase
+          .from("wholesalers")
+          .select("business_name")
+          .eq("profile_id", profile.id)
+          .single();
+
+        if (wholesalerError || !wholesaler) {
+          console.error(
+            "❌ [wholesaler-sidebar] 도매점 정보 조회 오류:",
+            wholesalerError,
+          );
+          return;
+        }
+
+        console.log(
+          "✅ [wholesaler-sidebar] 상호명 조회 완료:",
+          wholesaler.business_name,
+        );
+        setBusinessName(wholesaler.business_name);
+      } catch (error) {
+        console.error("❌ [wholesaler-sidebar] 상호명 조회 예외:", error);
+      }
+    };
+
+    fetchBusinessName();
+  }, [user, isLoaded, supabase]);
 
   // 사용자 이름의 첫 글자 추출 (아바타 폴백용)
   const getInitials = (name: string | null | undefined): string => {
@@ -125,7 +180,7 @@ export default function WholesalerSidebar() {
             {/* 사용자 정보 */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                도매 회원사
+                {businessName || "도매 회원사"}
               </p>
               {userEmail && (
                 <p className="text-xs text-gray-500 truncate">{userEmail}</p>
