@@ -137,7 +137,7 @@ export async function getProductsByCategory(
 ): Promise<GetProductsResult> {
   return getProducts({
     ...options,
-    filter: { ...options.filter, category },
+    filter: { category },
   });
 }
 
@@ -154,7 +154,7 @@ export async function searchProducts(
 ): Promise<GetProductsResult> {
   return getProducts({
     ...options,
-    filter: { ...options.filter, search: searchTerm },
+    filter: { search: searchTerm },
   });
 }
 

@@ -34,7 +34,7 @@
  */
 
 import { z } from "zod";
-import { CATEGORIES, DELIVERY_METHODS, UNITS } from "@/lib/utils/constants";
+import { CATEGORIES, UNITS } from "@/lib/utils/constants";
 
 /**
  * 상품 폼 데이터 스키마

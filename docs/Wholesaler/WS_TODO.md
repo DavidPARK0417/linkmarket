@@ -749,12 +749,12 @@ Anonymous Code 자동 생성 로직을 구현해줘.
 
 #### 3. 상품 수정 기능
 
-- [ ] **`app/wholesaler/products/[id]/edit/page.tsx` 구현**
-  - [ ] 상품 ID로 기존 데이터 조회
-  - [ ] ProductForm 컴포넌트 재사용
-  - [ ] 기존 데이터로 폼 초기화
-  - [ ] 수정 API 연동
-  - [ ] 성공 시 상품 목록으로 이동
+- [x] **`app/wholesaler/products/[id]/edit/page.tsx` 구현**
+  - [x] 상품 ID로 기존 데이터 조회
+  - [x] ProductForm 컴포넌트 재사용
+  - [x] 기존 데이터로 폼 초기화
+  - [x] 수정 API 연동
+  - [x] 성공 시 상품 목록으로 이동
 
 **커서 AI 프롬프트:**
 
