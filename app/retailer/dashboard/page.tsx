@@ -10,7 +10,11 @@
  * 2. AI 추천 상품 모듈 (R.DASH.02)
  * 3. 최근 주문 요약 (R.DASH.03)
  * 4. 긴급 알림/공지 (R.DASH.04)
- * 5. 반응형 디자인 (모바일/태블릿/데스크톱)
+ * 5. 월별 구매 추이 차트
+ * 6. 빠른 액션 (상품 검색, 주문 내역, 장바구니 바로가기)
+ * 7. 배송 예정 알림
+ * 8. 실시간 시세표
+ * 9. 반응형 디자인 (모바일/태블릿/데스크톱)
  *
  * @dependencies
  * - app/retailer/layout.tsx (레이아웃)
@@ -18,6 +22,10 @@
  * - components/retailer/ai-recommendation-list.tsx (AI 추천 상품 리스트)
  * - components/retailer/recent-orders-summary.tsx (최근 주문 요약)
  * - components/retailer/urgent-alerts.tsx (긴급 알림)
+ * - components/retailer/monthly-purchase-chart.tsx (월별 구매 추이 차트)
+ * - components/retailer/quick-actions.tsx (빠른 액션)
+ * - components/retailer/delivery-schedule-alerts.tsx (배송 예정 알림)
+ * - components/retailer/market-price-table.tsx (실시간 시세표)
  *
  * @see {@link PRD.md} - R.DASH.01~04 요구사항
  */
@@ -26,6 +34,10 @@ import { BentoGrid, BentoCard } from "@/components/retailer/bento-grid";
 import AIRecommendationList from "@/components/retailer/ai-recommendation-list";
 import RecentOrdersSummary from "@/components/retailer/recent-orders-summary";
 import UrgentAlerts from "@/components/retailer/urgent-alerts";
+import MonthlyPurchaseChart from "@/components/retailer/monthly-purchase-chart";
+import QuickActions from "@/components/retailer/quick-actions";
+import DeliveryScheduleAlerts from "@/components/retailer/delivery-schedule-alerts";
+import MarketPriceTable from "@/components/retailer/market-price-table";
 
 // 임시 목 데이터 - AI 추천 상품 (추후 API로 교체 예정)
 const mockRecommendedProducts = [
@@ -139,24 +151,96 @@ const mockAlerts = [
   },
 ];
 
+// 임시 목 데이터 - 월별 구매 추이 (추후 API로 교체 예정)
+const mockMonthlyPurchaseData = [
+  { month: "7월", amount: 1200000 },
+  { month: "8월", amount: 1500000 },
+  { month: "9월", amount: 1800000 },
+  { month: "10월", amount: 2100000 },
+  { month: "11월", amount: 2400000 },
+];
+
+// 임시 목 데이터 - 배송 예정 알림 (추후 API로 교체 예정)
+const mockDeliverySchedules = [
+  {
+    id: "2",
+    order_number: "20241124-0003",
+    product_name: "노르웨이 생연어 필렛 500g",
+    delivery_date: "2024-11-26",
+    delivery_time: "오전 9시",
+    delivery_method: "일반 배송" as const,
+    status: "shipping" as const,
+  },
+  {
+    id: "3",
+    order_number: "20241123-0007",
+    product_name: "무농약 아스파라거스 외 1건",
+    delivery_date: "2024-11-26",
+    delivery_time: "오전 7시",
+    delivery_method: "새벽 배송" as const,
+    status: "preparing" as const,
+  },
+];
+
+// 임시 목 데이터 - 실시간 시세표 (추후 API로 교체 예정)
+const mockMarketPrices = [
+  {
+    id: "1",
+    product_name: "배추",
+    current_price: 3500,
+    previous_price: 3200,
+    unit: "10kg",
+    change_rate: 9.4,
+  },
+  {
+    id: "2",
+    product_name: "무",
+    current_price: 2800,
+    previous_price: 3000,
+    unit: "10kg",
+    change_rate: -6.7,
+  },
+  {
+    id: "3",
+    product_name: "양파",
+    current_price: 4200,
+    previous_price: 4200,
+    unit: "10kg",
+    change_rate: 0,
+  },
+  {
+    id: "4",
+    product_name: "고구마",
+    current_price: 5500,
+    previous_price: 5000,
+    unit: "10kg",
+    change_rate: 10.0,
+  },
+];
+
 export default function RetailerDashboardPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 md:pb-8">
       {/* 헤더 섹션 */}
       <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
-          대시보드
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">
+          실시간 시세와 재고, 주문 알림을 한눈에!
         </h1>
         <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-gray-400">
-          재고 관리 및 구매 타이밍 최적화를 위한 AI 기반 대시보드
+          AI가 똑똑하게 알려드립니다.
         </p>
       </div>
 
       {/* Bento Grid 레이아웃 */}
       <BentoGrid>
-        {/* 큰 카드: AI 추천 상품 (2x1) - R.DASH.02 */}
-        <BentoCard colSpan={2} className="min-h-[400px] md:min-h-[500px]">
-          <AIRecommendationList products={mockRecommendedProducts} />
+        {/* 중간 카드: 최근 주문 (1x1) - R.DASH.03 */}
+        <BentoCard className="min-h-[280px]">
+          <RecentOrdersSummary orders={mockRecentOrders} />
+        </BentoCard>
+
+        {/* 작은 카드: 실시간 시세표 (1x1) */}
+        <BentoCard className="min-h-[280px]">
+          <MarketPriceTable prices={mockMarketPrices} />
         </BentoCard>
 
         {/* 작은 카드: 긴급 알림 (1x1) - R.DASH.04 */}
@@ -164,35 +248,80 @@ export default function RetailerDashboardPage() {
           <UrgentAlerts alerts={mockAlerts} />
         </BentoCard>
 
-        {/* 중간 카드: 최근 주문 (1x1) - R.DASH.03 */}
-        <BentoCard className="min-h-[280px]">
-          <RecentOrdersSummary orders={mockRecentOrders} />
-        </BentoCard>
-
-        {/* 큰 카드: 통계/차트 (2x1) */}
-        <BentoCard colSpan={2} className="min-h-[200px] md:min-h-[240px]">
-          <div className="h-full flex flex-col">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              구매 통계
-            </h2>
-            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-              곧 추가될 예정입니다.
-            </p>
-          </div>
+        {/* 큰 카드: AI 추천 상품 (2x1) - R.DASH.02 */}
+        <BentoCard colSpan={2} className="min-h-[400px] md:min-h-[500px]">
+          <AIRecommendationList products={mockRecommendedProducts} />
         </BentoCard>
 
         {/* 작은 카드: 빠른 액션 (1x1) */}
-        <BentoCard>
-          <div className="h-full flex flex-col">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
-              빠른 액션
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              곧 추가될 예정입니다.
-            </p>
-          </div>
+        <BentoCard className="min-h-[280px]">
+          <QuickActions />
         </BentoCard>
+
+        {/* 배송 예정 알림과 월별 구매 추이 차트를 1칸 반씩 배치 */}
+        <div className="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6">
+          {/* 배송 예정 알림 (1칸 반 = 3/6) */}
+          <div className="lg:col-span-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow min-h-[280px]">
+            <DeliveryScheduleAlerts schedules={mockDeliverySchedules} />
+          </div>
+
+          {/* 월별 구매 추이 차트 (1칸 반 = 3/6) */}
+          <div className="lg:col-span-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow min-h-[280px]">
+            <MonthlyPurchaseChart data={mockMonthlyPurchaseData} />
+          </div>
+        </div>
       </BentoGrid>
+
+      {/* 이벤트/프로모션 배너 섹션 */}
+      <div className="mt-8 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {/* 현재 진행 중인 할인 이벤트 배너 */}
+        <div className="rounded-xl bg-white dark:bg-gray-800 border-2 border-red-500 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 bg-red-500 text-white rounded-full text-xs md:text-sm font-semibold">
+              진행중
+            </span>
+            <span className="text-gray-600 dark:text-gray-400 text-xs md:text-sm">할인 이벤트</span>
+          </div>
+          <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            연말 특가 할인
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base mb-4">
+            전체 상품 최대 30% 할인
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl md:text-3xl font-bold text-red-500">30%</span>
+            <span className="text-gray-600 dark:text-gray-400 text-sm md:text-base">할인</span>
+          </div>
+        </div>
+
+        {/* 시즌 특가 배너 (첫 구매자/단골고객 전용) */}
+        <div className="rounded-xl bg-white dark:bg-gray-800 border-2 border-blue-500 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 bg-blue-500 text-white rounded-full text-xs md:text-sm font-semibold">
+              시즌 특가
+            </span>
+            <span className="text-gray-600 dark:text-gray-400 text-xs md:text-sm">첫 구매자/단골고객 전용</span>
+          </div>
+          <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            겨울 시즌 특가
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base mb-4">
+            첫 구매자 20% 추가 할인<br />
+            단골고객 15% 추가 할인
+          </p>
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-lg md:text-xl font-bold text-blue-500">20%</span>
+              <span className="text-gray-600 dark:text-gray-400 text-xs">첫 구매자</span>
+            </div>
+            <div className="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
+            <div className="flex flex-col">
+              <span className="text-lg md:text-xl font-bold text-blue-500">15%</span>
+              <span className="text-gray-600 dark:text-gray-400 text-xs">단골고객</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

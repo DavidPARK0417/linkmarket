@@ -35,6 +35,11 @@ const navLinks = [
     icon: Home,
   },
   {
+    href: "/retailer/orders",
+    label: "주문내역",
+    icon: ClipboardList,
+  },
+  {
     href: "/retailer/products",
     label: "상품",
     icon: Search,
@@ -43,11 +48,6 @@ const navLinks = [
     href: "/retailer/cart",
     label: "장바구니",
     icon: ShoppingCart,
-  },
-  {
-    href: "/retailer/orders",
-    label: "주문내역",
-    icon: ClipboardList,
   },
 ];
 
@@ -80,30 +80,43 @@ export default function RetailerHeader() {
             </span>
           </Link>
 
-          {/* 네비게이션 링크 - 데스크톱 */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* 네비게이션 링크 + 사용자 메뉴 - 데스크톱 */}
+          <div className="hidden md:flex items-center gap-4">
+            {/* 네비게이션 링크 */}
+            <nav className="flex items-center gap-1">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
 
-          {/* 사용자 메뉴 */}
-          <div className="flex items-center gap-4">
+            {/* 사용자 메뉴 */}
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-10 h-10",
+                },
+              }}
+            />
+          </div>
+
+          {/* 사용자 메뉴만 - 모바일 (네비게이션은 하단에) */}
+          <div className="md:hidden flex items-center">
             <UserButton
               afterSignOutUrl="/"
               appearance={{
