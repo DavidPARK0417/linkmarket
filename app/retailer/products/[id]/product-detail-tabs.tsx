@@ -14,7 +14,6 @@ import { Truck, Package, RefreshCw } from "lucide-react";
 interface ProductDetailTabsProps {
   product: {
     description: string;
-    shipping_fee: number;
     delivery_dawn_available: boolean;
     delivery_method: string;
   };
@@ -68,36 +67,7 @@ export function ProductDetailTabs({ product }: ProductDetailTabsProps) {
                 </h3>
                 <div className="space-y-3 text-gray-700 dark:text-gray-300">
                   <div>
-                    <p className="font-medium mb-1">배송비</p>
-                    <p>{product.shipping_fee.toLocaleString()}원</p>
-                  </div>
-                  <div>
-                    <p className="font-medium mb-1">배송 방법</p>
-                    <p>
-                      {product.delivery_method === "courier"
-                        ? "택배 배송"
-                        : product.delivery_method === "direct"
-                          ? "직배송"
-                          : product.delivery_method === "quick"
-                            ? "퀵서비스"
-                            : product.delivery_method === "freight"
-                              ? "화물 배송"
-                              : "픽업"}
-                    </p>
-                  </div>
-                  {product.delivery_dawn_available && (
-                    <div>
-                      <p className="font-medium mb-1">새벽 배송</p>
-                      <p>다음날 오전 7시 전 도착 가능합니다.</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-medium mb-1">배송 소요 시간</p>
-                    <p>
-                      {product.delivery_dawn_available
-                        ? "새벽 배송: 다음날 오전 7시 전"
-                        : "일반 배송: 2-3일 소요"}
-                    </p>
+                    <p className="font-medium mb-1">배송방법</p>
                   </div>
                 </div>
               </div>

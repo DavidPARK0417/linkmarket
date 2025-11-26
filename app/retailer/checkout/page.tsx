@@ -48,8 +48,7 @@ export default function CheckoutPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const totalShippingFee = 3000;
-  const totalPrice = totalProductPrice + totalShippingFee;
+  const totalPrice = totalProductPrice;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
@@ -123,7 +122,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    다음날 오전 7시 전 도착 (+5,000원)
+                    다음날 오전 7시 전 도착
                   </p>
                   {/* 시간 선택 */}
                   <select className="mt-3 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm">
@@ -147,7 +146,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    2-3일 소요 (무료)
+                    2-3일 소요
                   </p>
                 </div>
               </label>
@@ -216,14 +215,6 @@ export default function CheckoutPage() {
                   </span>
                   <span className="text-gray-900 dark:text-gray-100">
                     {totalProductPrice.toLocaleString()}원
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    배송비
-                  </span>
-                  <span className="text-gray-900 dark:text-gray-100">
-                    {totalShippingFee.toLocaleString()}원
                   </span>
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between text-base font-bold">
