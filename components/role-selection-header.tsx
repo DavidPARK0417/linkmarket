@@ -41,20 +41,15 @@ export default function RoleSelectionHeader() {
           {/* 왼쪽: FarmToBiz 로고 */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 sm:gap-3 md:gap-4 text-[#111418] dark:text-[#f0f2f4] hover:opacity-80 transition-opacity"
+            className="flex items-center text-[#111418] dark:text-[#f0f2f4] hover:opacity-80 transition-opacity"
           >
-            <div className="w-5 h-5 sm:w-6 sm:h-6 text-[#137fec] flex-shrink-0">
-              <Image
-                src="/logo.png"
-                alt="FarmToBiz"
-                width={24}
-                height={24}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <h2 className="text-base sm:text-lg md:text-xl font-bold leading-tight tracking-[-0.015em]">
-              FarmToBiz
-            </h2>
+            <Image
+              src="/farmtobiz_logo.png"
+              alt="FarmToBiz"
+              width={160}
+              height={62}
+              className="object-contain"
+            />
           </Link>
 
           {/* 오른쪽: 다크모드 토글 버튼 */}

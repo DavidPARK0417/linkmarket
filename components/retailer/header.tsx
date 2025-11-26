@@ -70,17 +70,14 @@ export default function RetailerHeader() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* 로고 */}
-            <Link href="/retailer/dashboard" className="flex items-center gap-2">
+            <Link href="/retailer/dashboard" className="flex items-center">
               <Image
-                src="/logo.png"
+                src="/farmtobiz_logo.png"
                 alt="FarmToBiz"
-                width={32}
-                height={32}
+                width={180}
+                height={69}
                 className="object-contain"
               />
-              <span className="text-xl font-bold text-green-600 hidden sm:inline">
-                FarmToBiz
-              </span>
             </Link>
 
           {/* 네비게이션 링크 + 사용자 메뉴 - 데스크톱 */}

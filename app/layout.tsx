@@ -29,6 +29,11 @@ export const metadata: Metadata = {
   title: "FarmToBiz - 도매와 소매를 연결하는 B2B 중개 플랫폼",
   description:
     "도매의 민감 정보를 노출하지 않으면서 소매가 여러 도매의 상품을 비교하고 주문할 수 있는 B2B 플랫폼",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
