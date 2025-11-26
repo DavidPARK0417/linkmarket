@@ -13,6 +13,9 @@
 import type { OrderStatus } from "./database";
 import type { Product, ProductVariant } from "./product";
 
+// OrderStatus를 re-export하여 다른 파일에서도 types/order에서 import 가능하도록 함
+export type { OrderStatus };
+
 /**
  * 주문 테이블 타입
  * orders 테이블과 일치

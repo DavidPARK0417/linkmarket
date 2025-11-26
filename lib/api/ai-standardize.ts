@@ -175,7 +175,9 @@ export async function standardizeProductName(
     // 4. Rate limit 처리 (429 에러)
     if (response.status === 429) {
       console.error("❌ [ai-standardize] Rate limit 초과 (429)");
-      throw new Error("API 호출 한도가 초과되었습니다. 잠시 후 다시 시도해주세요.");
+      throw new Error(
+        "API 호출 한도가 초과되었습니다. 잠시 후 다시 시도해주세요.",
+      );
     }
 
     if (!response.ok) {
@@ -185,7 +187,9 @@ export async function standardizeProductName(
         errorData,
       });
       throw new Error(
-        `Gemini API 호출 실패: ${response.status} ${errorData.error?.message || ""}`,
+        `Gemini API 호출 실패: ${response.status} ${
+          errorData.error?.message || ""
+        }`,
       );
     }
 
@@ -220,7 +224,8 @@ export async function standardizeProductName(
       standardizedName: result.standardizedName || trimmedName,
       suggestedCategory: result.suggestedCategory || "기타",
       keywords: Array.isArray(result.keywords) ? result.keywords : [],
-      confidence: typeof result.confidence === "number" ? result.confidence : 0.5,
+      confidence:
+        typeof result.confidence === "number" ? result.confidence : 0.5,
     };
 
     console.log("✅ [ai-standardize] 표준화 완료:", standardizeResult);
@@ -326,7 +331,9 @@ ${productNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}
 
     if (response.status === 429) {
       console.error("❌ [ai-standardize] Rate limit 초과 (429)");
-      throw new Error("API 호출 한도가 초과되었습니다. 잠시 후 다시 시도해주세요.");
+      throw new Error(
+        "API 호출 한도가 초과되었습니다. 잠시 후 다시 시도해주세요.",
+      );
     }
 
     if (!response.ok) {
@@ -336,7 +343,9 @@ ${productNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}
         errorData,
       });
       throw new Error(
-        `Gemini API 호출 실패: ${response.status} ${errorData.error?.message || ""}`,
+        `Gemini API 호출 실패: ${response.status} ${
+          errorData.error?.message || ""
+        }`,
       );
     }
 
@@ -355,7 +364,11 @@ ${productNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}
       if (jsonMatch) {
         results = JSON.parse(jsonMatch[0]);
       } else {
-        throw new Error("JSON 형식의 응답을 파싱할 수 없습니다.");
+        const errorMessage =
+          parseError instanceof Error ? parseError.message : String(parseError);
+        throw new Error(
+          `JSON 형식의 응답을 파싱할 수 없습니다: ${errorMessage}`,
+        );
       }
     }
 
@@ -369,4 +382,3 @@ ${productNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}
     throw error;
   }
 }
-
