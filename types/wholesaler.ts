@@ -25,6 +25,8 @@ export interface Wholesaler {
   address: string;
   bank_account: string; // 은행명 포함하여 저장
   anonymous_code: string; // VENDOR-001 형식 (소매에게 노출되는 익명 코드)
+  anonymous_id: string | null; // Partner #F2B-01 형식의 익명 식별자
+  region: string | null; // 시/구 단위의 대략적 지역 정보
   status: WholesalerStatus;
   rejection_reason: string | null;
   created_at: string;
