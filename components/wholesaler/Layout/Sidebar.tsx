@@ -216,7 +216,8 @@ export default function WholesalerSidebar() {
             const isActive = mounted
               ? item.href === "/wholesaler/dashboard"
                 ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(item.href + "/")
+                : pathname === item.href ||
+                  pathname.startsWith(item.href + "/")
               : false;
 
             return (

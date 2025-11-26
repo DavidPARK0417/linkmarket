@@ -17,6 +17,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ShoppingCart, Truck, Package } from "lucide-react";
+import { ProductDetailTabs } from "./product-detail-tabs";
 
 // 임시 목 데이터
 const mockProduct = {
@@ -29,7 +30,6 @@ const mockProduct = {
     "GAP 인증을 받은 고랭지에서 재배한 프리미엄 설향 딸기입니다. 당도가 높고 향이 풍부하여 디저트나 생과로 드시기에 적합합니다.",
   price: 15900,
   moq: 1,
-  shipping_fee: 3000,
   delivery_method: "courier",
   stock_quantity: 50,
   image_url: "/strawberry.jpg",
@@ -74,11 +74,6 @@ export default async function ProductDetailPage({
               {mockProduct.is_seasonal && (
                 <span className="px-3 py-1 bg-green-500 text-white text-sm font-bold rounded-full">
                   제철 농산물
-                </span>
-              )}
-              {mockProduct.delivery_dawn_available && (
-                <span className="px-3 py-1 bg-blue-500 text-white text-sm font-bold rounded-full">
-                  새벽배송 가능
                 </span>
               )}
             </div>
@@ -135,12 +130,7 @@ export default async function ProductDetailPage({
             <Truck className="w-5 h-5 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
             <div className="flex flex-col gap-1 text-sm">
               <p className="font-medium text-gray-900 dark:text-gray-100">
-                배송비: {mockProduct.shipping_fee.toLocaleString()}원
-              </p>
-              <p className="text-gray-600 dark:text-gray-400">
-                {mockProduct.delivery_dawn_available
-                  ? "새벽 배송 가능 (다음날 오전 7시 전 도착)"
-                  : "일반 배송 (2-3일 소요)"}
+                배송방법
               </p>
             </div>
           </div>
@@ -180,27 +170,7 @@ export default async function ProductDetailPage({
       </div>
 
       {/* 추가 정보 탭 */}
-      <div className="mt-12">
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <div className="flex gap-8">
-            <button className="pb-4 border-b-2 border-green-600 text-green-600 font-medium">
-              상세 정보
-            </button>
-            <button className="pb-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-              배송 안내
-            </button>
-            <button className="pb-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-              교환/반품
-            </button>
-          </div>
-        </div>
-
-        <div className="py-8">
-          <p className="text-gray-700 dark:text-gray-300">
-            상품 상세 정보가 여기에 표시됩니다.
-          </p>
-        </div>
-      </div>
+      <ProductDetailTabs product={mockProduct} />
     </div>
   );
 }

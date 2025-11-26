@@ -61,8 +61,7 @@ const mockOrderDetail = {
   },
   price_info: {
     product_total: 31800,
-    shipping_fee: 4000,
-    total: 35800,
+    total: 31800,
   },
   timeline: [
     {
@@ -317,12 +316,6 @@ export default async function OrderDetailPage({
               <span className="text-gray-600 dark:text-gray-400">상품 금액</span>
               <span className="text-gray-900 dark:text-gray-100">
                 {order.price_info.product_total.toLocaleString()}원
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">배송비</span>
-              <span className="text-gray-900 dark:text-gray-100">
-                {order.price_info.shipping_fee.toLocaleString()}원
               </span>
             </div>
             <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-700">
