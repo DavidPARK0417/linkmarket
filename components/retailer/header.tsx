@@ -85,13 +85,17 @@ export default function RetailerHeader({ role }: RetailerHeaderProps) {
                   className="object-contain"
                 />
               </Link>
-              {/* 관리자 배지 */}
+              {/* 관리자 배지 - 클릭 가능 */}
               {role === "admin" && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-red-500 text-white rounded-full text-xs font-semibold">
+                <Link
+                  href="/admin/dashboard"
+                  className="flex items-center gap-1.5 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-semibold transition-colors cursor-pointer"
+                  title="관리자 페이지로 돌아가기"
+                >
                   <Shield className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">관리자 모드</span>
                   <span className="sm:hidden">관리자</span>
-                </div>
+                </Link>
               )}
             </div>
 
