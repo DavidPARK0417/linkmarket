@@ -3,10 +3,12 @@
  * @description 주문 테이블 컴포넌트
  *
  * TanStack Table을 사용한 주문 목록 테이블입니다.
+ * 체크박스 선택 및 일괄 상태 변경 기능을 포함합니다.
  *
  * @dependencies
  * - @tanstack/react-table
  * - components/ui/table.tsx
+ * - components/ui/checkbox.tsx
  * - components/wholesaler/Orders/OrderStatusBadge.tsx
  */
 
@@ -20,6 +22,7 @@ import {
   getSortedRowModel,
   type ColumnDef,
   type SortingState,
+  type RowSelectionState,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -35,22 +38,97 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import OrderStatusBadge from "./OrderStatusBadge";
 import type { OrderDetail } from "@/types/order";
+import type { OrderStatus } from "@/types/database";
 
 interface OrderTableProps {
   orders: OrderDetail[];
   isLoading?: boolean;
+  onBatchStatusChange?: (orderIds: string[], status: OrderStatus) => void;
+  isBatchProcessing?: boolean;
 }
 
 export default function OrderTable({
   orders,
   isLoading = false,
+  onBatchStatusChange,
+  isBatchProcessing = false,
 }: OrderTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
+  // 선택된 주문 ID 배열
+  const selectedOrderIds = React.useMemo(() => {
+    return Object.keys(rowSelection)
+      .filter((key) => rowSelection[key])
+      .map((key) => orders[parseInt(key)]?.id)
+      .filter(Boolean) as string[];
+  }, [rowSelection, orders]);
+
+  // 일괄 접수 확인 핸들러
+  const handleBatchConfirm = () => {
+    if (selectedOrderIds.length === 0) return;
+    if (!onBatchStatusChange) return;
+
+    const confirmed = window.confirm(
+      `선택한 ${selectedOrderIds.length}개의 주문을 접수 확인 처리하시겠습니까?`,
+    );
+
+    if (confirmed) {
+      onBatchStatusChange(selectedOrderIds, "confirmed");
+      // 선택 초기화
+      setRowSelection({});
+    }
+  };
+
+  // 일괄 출고 처리 핸들러
+  const handleBatchShip = () => {
+    if (selectedOrderIds.length === 0) return;
+    if (!onBatchStatusChange) return;
+
+    const confirmed = window.confirm(
+      `선택한 ${selectedOrderIds.length}개의 주문을 출고 처리하시겠습니까?`,
+    );
+
+    if (confirmed) {
+      onBatchStatusChange(selectedOrderIds, "shipped");
+      // 선택 초기화
+      setRowSelection({});
+    }
+  };
 
   const columns: ColumnDef<OrderDetail>[] = React.useMemo(
     () => [
+      {
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label="전체 선택"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="행 선택"
+            disabled={
+              row.original.status === "completed" ||
+              row.original.status === "cancelled"
+            }
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
       {
         accessorKey: "order_number",
         header: "주문번호",
@@ -123,7 +201,7 @@ export default function OrderTable({
         },
       },
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -133,8 +211,17 @@ export default function OrderTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
+    onRowSelectionChange: setRowSelection,
+    enableRowSelection: (row) => {
+      // 완료/취소된 주문은 선택 불가
+      return (
+        row.original.status !== "completed" &&
+        row.original.status !== "cancelled"
+      );
+    },
     state: {
       sorting,
+      rowSelection,
     },
   });
 
@@ -156,6 +243,33 @@ export default function OrderTable({
 
   return (
     <div className="space-y-4">
+      {/* 일괄 처리 버튼 */}
+      {selectedOrderIds.length > 0 && onBatchStatusChange && (
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-4">
+          <span className="text-sm font-medium">
+            {selectedOrderIds.length}개 선택됨
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleBatchConfirm}
+              disabled={isBatchProcessing}
+            >
+              {isBatchProcessing ? "처리 중..." : "일괄 접수 확인"}
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleBatchShip}
+              disabled={isBatchProcessing}
+            >
+              {isBatchProcessing ? "처리 중..." : "일괄 출고 처리"}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -165,7 +279,7 @@ export default function OrderTable({
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : (header.column.columnDef.header as string)}
+                      : (header.column.columnDef.header as React.ReactNode)}
                   </TableHead>
                 ))}
               </TableRow>
@@ -207,4 +321,3 @@ export default function OrderTable({
     </div>
   );
 }
-

@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { Search, X } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 
@@ -48,13 +48,14 @@ import {
   subscribeToNewOrders,
   subscribeToOrderUpdates,
 } from "@/lib/supabase/realtime";
+import { batchUpdateOrderStatus } from "@/actions/wholesaler/batch-update-order-status";
 import type { OrderStatus } from "@/types/database";
 import type { OrderFilter } from "@/types/order";
 
 // 주문 목록 조회 함수 (클라이언트에서 직접 호출)
 async function fetchOrders(filter: OrderFilter = {}) {
   console.log("🔍 [orders-page] 주문 목록 조회 요청", { filter });
-  
+
   const response = await fetch("/api/wholesaler/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -71,7 +72,7 @@ async function fetchOrders(filter: OrderFilter = {}) {
     } catch (e) {
       console.error("❌ [orders-page] 에러 응답 파싱 실패:", e);
     }
-    
+
     throw new Error(errorMessage);
   }
 
@@ -80,7 +81,7 @@ async function fetchOrders(filter: OrderFilter = {}) {
     ordersCount: data.orders?.length ?? 0,
     total: data.total,
   });
-  
+
   return data;
 }
 
@@ -97,7 +98,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = React.useState<string>("all");
   const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
   const [statusFilter, setStatusFilter] = React.useState<OrderStatus | "all">(
-    "all"
+    "all",
   );
   const [searchTerm, setSearchTerm] = React.useState("");
 
@@ -120,10 +121,7 @@ export default function OrdersPage() {
           .single();
 
         if (profileError || !profile) {
-          console.error(
-            "❌ [orders-page] 프로필 조회 오류:",
-            profileError
-          );
+          console.error("❌ [orders-page] 프로필 조회 오류:", profileError);
           toast.error("프로필 정보를 불러올 수 없습니다.");
           return;
         }
@@ -140,16 +138,13 @@ export default function OrdersPage() {
         if (wholesalerError || !wholesaler) {
           console.error(
             "❌ [orders-page] 도매점 정보 조회 오류:",
-            wholesalerError
+            wholesalerError,
           );
           toast.error("도매점 정보를 불러올 수 없습니다.");
           return;
         }
 
-        console.log(
-          "✅ [orders-page] 도매점 ID 조회 완료:",
-          wholesaler.id
-        );
+        console.log("✅ [orders-page] 도매점 ID 조회 완료:", wholesaler.id);
         setWholesalerId(wholesaler.id);
         console.groupEnd();
       } catch (error) {
@@ -209,6 +204,64 @@ export default function OrdersPage() {
     enabled: !!wholesalerId, // 도매점 ID가 있을 때만 조회
   });
 
+  // 일괄 상태 변경 Mutation
+  const batchStatusChangeMutation = useMutation({
+    mutationFn: async ({
+      orderIds,
+      status,
+    }: {
+      orderIds: string[];
+      status: OrderStatus;
+    }) => {
+      console.log("🔄 [orders-page] 일괄 상태 변경 시작", {
+        orderIds,
+        status,
+        count: orderIds.length,
+      });
+
+      const result = await batchUpdateOrderStatus(orderIds, status);
+
+      if (!result.success && result.failureCount === orderIds.length) {
+        throw new Error(
+          result.errors?.[0]?.error || "일괄 상태 변경 중 오류가 발생했습니다.",
+        );
+      }
+
+      return result;
+    },
+    onSuccess: (result) => {
+      console.log("✅ [orders-page] 일괄 상태 변경 완료", result);
+
+      if (result.successCount > 0) {
+        toast.success(`${result.successCount}개의 주문 상태가 변경되었습니다.`);
+      }
+
+      if (result.failureCount > 0) {
+        toast.error(`${result.failureCount}개의 주문 처리에 실패했습니다.`, {
+          description: result.errors
+            ?.map((e) => `${e.orderId}: ${e.error}`)
+            .join(", "),
+        });
+      }
+
+      // 주문 목록 새로고침
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (error) => {
+      console.error("❌ [orders-page] 일괄 상태 변경 오류:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "일괄 상태 변경 중 오류가 발생했습니다.",
+      );
+    },
+  });
+
+  // 일괄 상태 변경 핸들러
+  const handleBatchStatusChange = (orderIds: string[], status: OrderStatus) => {
+    batchStatusChangeMutation.mutate({ orderIds, status });
+  };
+
   // 실시간 업데이트 구독
   React.useEffect(() => {
     if (!wholesalerId) return;
@@ -226,7 +279,7 @@ export default function OrdersPage() {
         });
         // 주문 목록 새로고침
         queryClient.invalidateQueries({ queryKey: ["orders"] });
-      }
+      },
     );
 
     // 주문 상태 변경 구독
@@ -237,7 +290,7 @@ export default function OrdersPage() {
         console.log("🔄 주문 상태 변경 알림:", order);
         // 주문 목록 새로고침
         queryClient.invalidateQueries({ queryKey: ["orders"] });
-      }
+      },
     );
 
     // Cleanup
@@ -345,6 +398,8 @@ export default function OrdersPage() {
             <OrderTable
               orders={ordersData?.orders ?? []}
               isLoading={isLoading}
+              onBatchStatusChange={handleBatchStatusChange}
+              isBatchProcessing={batchStatusChangeMutation.isPending}
             />
           )}
         </TabsContent>

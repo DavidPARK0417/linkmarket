@@ -47,7 +47,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 interface OrderDetailProps {
   order: OrderDetailType & {
@@ -80,6 +80,103 @@ export default function OrderDetail({ order }: OrderDetailProps) {
 
   const nextStatus = getNextStatus();
 
+  // 상태 변경 Mutation (낙관적 업데이트 적용)
+  const statusChangeMutation = useMutation({
+    mutationFn: async (newStatus: OrderStatus) => {
+      console.log("🔄 [order-detail] 주문 상태 변경 시작", {
+        orderId: order.id,
+        currentStatus: order.status,
+        newStatus,
+      });
+
+      const result = await updateOrderStatus(order.id, newStatus);
+
+      if (!result.success) {
+        throw new Error(result.error || "주문 상태 변경 실패");
+      }
+
+      return newStatus;
+    },
+    // 낙관적 업데이트: API 호출 전에 UI를 먼저 업데이트
+    onMutate: async (newStatus) => {
+      // 진행 중인 쿼리 취소
+      await queryClient.cancelQueries({ queryKey: ["order", order.id] });
+      await queryClient.cancelQueries({ queryKey: ["orders"] });
+
+      // 이전 값 저장 (롤백용)
+      const previousOrder = queryClient.getQueryData(["order", order.id]) as
+        | OrderDetailType
+        | undefined;
+
+      // 낙관적 업데이트: 새로운 상태로 즉시 업데이트
+      queryClient.setQueryData<OrderDetailType>(["order", order.id], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+        };
+      });
+
+      // 주문 목록도 낙관적 업데이트
+      queryClient.setQueriesData<{ orders: OrderDetailType[] }>(
+        { queryKey: ["orders"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            orders: old.orders.map((o) =>
+              o.id === order.id
+                ? {
+                    ...o,
+                    status: newStatus,
+                    updated_at: new Date().toISOString(),
+                  }
+                : o,
+            ),
+          };
+        },
+      );
+
+      return { previousOrder };
+    },
+    // 에러 발생 시 롤백
+    onError: (error, newStatus, context) => {
+      console.error("❌ [order-detail] 주문 상태 변경 오류:", error);
+
+      // 이전 값으로 롤백
+      if (context?.previousOrder) {
+        queryClient.setQueryData(["order", order.id], context.previousOrder);
+      }
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "주문 상태 변경 중 오류가 발생했습니다.",
+      );
+    },
+    // 성공 시 처리
+    onSuccess: (newStatus) => {
+      console.log("✅ [order-detail] 주문 상태 변경 완료", {
+        orderId: order.id,
+        newStatus,
+      });
+
+      toast.success("주문 상태가 변경되었습니다.");
+
+      // React Query 캐시 무효화 (서버 데이터와 동기화)
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order", order.id] });
+
+      // 페이지 새로고침
+      router.refresh();
+    },
+    // 완료 시 처리
+    onSettled: () => {
+      setIsUpdating(false);
+    },
+  });
+
   // 상태 변경 핸들러
   const handleStatusChange = async () => {
     if (!nextStatus) return;
@@ -91,43 +188,7 @@ export default function OrderDetail({ order }: OrderDetailProps) {
     if (!confirmed) return;
 
     setIsUpdating(true);
-
-    try {
-      console.log("🔄 [order-detail] 주문 상태 변경 시작", {
-        orderId: order.id,
-        currentStatus: order.status,
-        nextStatus,
-      });
-
-      const result = await updateOrderStatus(order.id, nextStatus);
-
-      if (!result.success) {
-        throw new Error(result.error || "주문 상태 변경 실패");
-      }
-
-      console.log("✅ [order-detail] 주문 상태 변경 완료", {
-        orderId: order.id,
-        newStatus: nextStatus,
-      });
-
-      toast.success("주문 상태가 변경되었습니다.");
-
-      // React Query 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["order", order.id] });
-
-      // 페이지 새로고침
-      router.refresh();
-    } catch (error) {
-      console.error("❌ [order-detail] 주문 상태 변경 오류:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "주문 상태 변경 중 오류가 발생했습니다.",
-      );
-    } finally {
-      setIsUpdating(false);
-    }
+    statusChangeMutation.mutate(nextStatus);
   };
 
   // 타임라인 아이템 생성
