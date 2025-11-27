@@ -7,24 +7,36 @@
  *
  * 주요 기능:
  * 1. 페이지 제목 영역 (경로별 동적 표시)
- * 2. 알림 아이콘 (새 주문 알림 표시 - UI만 구현, 로직은 추후)
+ * 2. 알림 아이콘 (새 주문 알림 표시 및 드롭다운 메뉴)
  * 3. 사용자 드롭다운 메뉴 (Clerk UserButton 사용)
  * 4. 반응형 디자인 (모바일에서 제목 숨김)
  *
  * @dependencies
  * - @clerk/nextjs (UserButton)
- * - next/navigation (usePathname)
+ * - next/navigation (usePathname, useRouter)
  * - lucide-react (아이콘)
+ * - hooks/use-wholesaler-notifications.ts
+ * - lib/utils/format.ts
  */
 
 "use client";
 
 import { UserButton, useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bell, Shield } from "lucide-react";
+import { Bell, Shield, Package, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { UserRole } from "@/types/database";
+import { useWholesalerNotifications } from "@/hooks/use-wholesaler-notifications";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { formatPrice, formatDateTime } from "@/lib/utils/format";
 
 // 경로별 페이지 제목 매핑 (Sidebar의 menuItems와 일관성 유지)
 const pageTitleMap: Record<string, string> = {
@@ -43,13 +55,33 @@ interface WholesalerHeaderProps {
 
 export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isLoaded } = useUser();
   const [mounted, setMounted] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // 알림 훅 사용
+  const {
+    unreadCount,
+    recentOrders,
+    hasNewNotifications,
+    isLoading: isLoadingNotifications,
+    markAsRead,
+    isMarkingAsRead,
+  } = useWholesalerNotifications();
 
   // 클라이언트 사이드 마운트 확인 (Hydration 오류 방지)
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // 드롭다운이 열릴 때 읽음 처리
+  useEffect(() => {
+    if (isDropdownOpen && hasNewNotifications && !isMarkingAsRead) {
+      console.log("🔔 [header] 드롭다운 열림 - 읽음 처리 시작");
+      markAsRead();
+    }
+  }, [isDropdownOpen, hasNewNotifications, isMarkingAsRead, markAsRead]);
 
   // 현재 경로에 따른 페이지 제목 결정
   const getPageTitle = (): string => {
@@ -76,8 +108,11 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
 
   const pageTitle = getPageTitle();
 
-  // 알림 상태 (추후 실제 알림 로직으로 연결 예정)
-  const hasNewNotifications = false;
+  // 주문 상세 페이지로 이동
+  const handleOrderClick = (orderId: string) => {
+    router.push(`/wholesaler/orders/${orderId}`);
+    setIsDropdownOpen(false);
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6">
@@ -101,21 +136,93 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
 
       {/* 오른쪽 영역: 알림 + 사용자 메뉴 */}
       <div className="flex items-center gap-4">
-        {/* 알림 아이콘 */}
-        <button
-          className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
-          aria-label="알림"
-          onClick={() => {
-            // 추후 알림 목록 드롭다운 연결 예정
-            console.log("알림 클릭");
-          }}
-        >
-          <Bell className="w-5 h-5" />
-          {/* 알림 배지 (새 알림이 있을 때만 표시) */}
-          {hasNewNotifications && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          )}
-        </button>
+        {/* 알림 드롭다운 메뉴 */}
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+              aria-label="알림"
+              disabled={isLoadingNotifications}
+            >
+              <Bell className="w-5 h-5" />
+              {/* 알림 배지 (새 알림이 있을 때만 표시) */}
+              {hasNewNotifications && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel className="flex items-center justify-between">
+              <span>주문 알림</span>
+              {unreadCount > 0 && (
+                <span className="text-xs font-normal text-red-500">
+                  읽지 않음 {unreadCount}개
+                </span>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {isLoadingNotifications ? (
+              <div className="p-4 text-center text-sm text-gray-500">
+                알림을 불러오는 중...
+              </div>
+            ) : recentOrders.length === 0 ? (
+              <div className="p-4 text-center text-sm text-gray-500">
+                알림이 없습니다
+              </div>
+            ) : (
+              <div className="max-h-96 overflow-y-auto">
+                {recentOrders.map((order) => (
+                  <DropdownMenuItem
+                    key={order.id}
+                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                    onClick={() => handleOrderClick(order.id)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-gray-500" />
+                        <span className="font-medium text-sm">
+                          {order.product.name}
+                        </span>
+                        {!order.is_read && (
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {formatDateTime(order.created_at, "time-only")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between w-full text-xs text-gray-600">
+                      <span>주문번호: {order.order_number}</span>
+                      <span className="font-medium">
+                        {formatPrice(order.total_amount)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Clock className="w-3 h-3" />
+                      <span>
+                        {formatDateTime(order.created_at, "default")}
+                      </span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            )}
+            {recentOrders.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-center justify-center cursor-pointer"
+                  onClick={() => {
+                    router.push("/wholesaler/orders");
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  모든 주문 보기
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* 사용자 드롭다운 메뉴 - 클라이언트 사이드에서만 렌더링 */}
         {mounted && isLoaded && (

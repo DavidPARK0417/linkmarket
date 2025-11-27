@@ -34,6 +34,7 @@ export interface Order {
   delivery_address: string;
   request_note: string | null;
   status: OrderStatus;
+  wholesaler_read_at: string | null; // 도매점이 주문을 읽은 시간 (NULL이면 읽지 않음)
   created_at: string;
   updated_at: string;
 }
