@@ -17,6 +17,7 @@
 
 import Link from "next/link";
 import { requireAdmin } from "@/lib/clerk/auth";
+import { Store, ShoppingBag, Shield } from "lucide-react";
 
 export default async function AdminPage() {
   // 관리자 권한 확인 (레이아웃에서도 확인하지만, 페이지에서도 명시적으로 확인)
@@ -37,8 +38,75 @@ export default async function AdminPage() {
         </p>
       </div>
 
+      {/* 페이지 전환 섹션 */}
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          페이지 전환
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* 관리자 대시보드 (현재 페이지) */}
+          <div className="p-6 bg-red-50 rounded-lg shadow-sm border-2 border-red-200">
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">
+                  관리자 대시보드
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">현재 페이지</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 도매 페이지 */}
+          <Link
+            href="/wholesaler/dashboard"
+            className="block p-6 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Store className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">
+                  도매 페이지
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  도매점 관리 화면으로 이동
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          {/* 소매 페이지 */}
+          <Link
+            href="/retailer/dashboard"
+            className="block p-6 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-green-300 transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <ShoppingBag className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">
+                  소매 페이지
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  소매점 관리 화면으로 이동
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+
       {/* 관리 기능 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          관리 기능
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* 도매 승인 대기 카드 */}
         <Link
           href="/admin/wholesalers/pending"
@@ -130,6 +198,7 @@ export default async function AdminPage() {
             </div>
           </div>
         </Link>
+        </div>
       </div>
 
       {/* 현재 관리자 정보 */}
