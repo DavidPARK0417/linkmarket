@@ -216,7 +216,6 @@ export default function SignInWithRedirect({
     onboardingUrl,
   });
 
-  const router = useRouter();
   const pathname = usePathname();
   const [showSignUpModal, setShowSignUpModal] = useState(false);
 

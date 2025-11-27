@@ -28,7 +28,6 @@ import { format } from "date-fns";
 import { Search, X } from "lucide-react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useUser } from "@clerk/nextjs";
 
 import PageHeader from "@/components/common/PageHeader";
 import { Input } from "@/components/ui/input";
@@ -87,7 +86,6 @@ async function fetchOrders(filter: OrderFilter = {}) {
 }
 
 export default function OrdersPage() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const supabase = useClerkSupabaseClient();
   const {

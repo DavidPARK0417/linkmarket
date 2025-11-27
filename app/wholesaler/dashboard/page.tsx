@@ -64,11 +64,7 @@ async function fetchDashboardStats(): Promise<DashboardStats> {
 export default function DashboardPage() {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
-  const {
-    data: wholesaler,
-    isLoading: isWholesalerLoading,
-    error: wholesalerError,
-  } = useWholesaler();
+  const { data: wholesaler, error: wholesalerError } = useWholesaler();
 
   // 대시보드 통계 데이터 조회
   const {

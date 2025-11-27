@@ -24,7 +24,8 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
@@ -118,7 +119,7 @@ export function ProductTable({ initialData, initialFilters }: ProductTableProps)
   };
 
   // 활성화/비활성화 토글
-  const toggleActive = async (product: Product) => {
+  const toggleActive = useCallback(async (product: Product) => {
     try {
       console.log("🔄 [product-table] 상품 상태 변경 시작", {
         productId: product.id,
@@ -139,7 +140,7 @@ export function ProductTable({ initialData, initialFilters }: ProductTableProps)
       console.error("❌ [product-table] 상품 상태 변경 실패:", error);
       toast.error("상품 상태 변경 중 오류가 발생했습니다.");
     }
-  };
+  }, [router]);
 
   // 테이블 컬럼 정의
   const columns: ColumnDef<Product>[] = useMemo(
@@ -247,9 +248,9 @@ export function ProductTable({ initialData, initialFilters }: ProductTableProps)
                 size="sm"
                 asChild
               >
-                <a href={`/wholesaler/products/${product.id}/edit`}>
+                <Link href={`/wholesaler/products/${product.id}/edit`}>
                   <Edit className="h-4 w-4" />
-                </a>
+                </Link>
               </Button>
             </div>
           );
