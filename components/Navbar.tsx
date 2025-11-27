@@ -7,8 +7,6 @@ import { useUser } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
-import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
 
 const Navbar = () => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -17,13 +15,6 @@ const Navbar = () => {
   const supabase = useClerkSupabaseClient();
   const [isApprovedWholesaler, setIsApprovedWholesaler] = useState(false);
   const [wholesalerStatus, setWholesalerStatus] = useState<string | null>(null);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // 클라이언트 마운트 확인 (hydration 문제 방지)
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // 승인된 도매사업자 여부 및 상태 확인
   useEffect(() => {
@@ -132,23 +123,6 @@ const Navbar = () => {
 
       {/* 우측 영역: 사용자 정보 */}
       <div className="flex items-center gap-3">
-        {/* 테마 토글 버튼 */}
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label="테마 변경"
-        >
-          {mounted ? (
-            theme === "dark" ? (
-              <Moon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            ) : (
-              <Sun className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            )
-          ) : (
-            <div className="w-5 h-5" /> // 로딩 중 플레이스홀더
-          )}
-        </button>
-
         {/* 로그인 상태에 따라 사용자 정보 표시 */}
         {isLoaded && isSignedIn && (
           <>

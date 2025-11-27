@@ -24,18 +24,25 @@ import { SignIn } from "@clerk/nextjs";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+// 개발 환경에서만 로그를 출력하는 유틸리티 함수
+const debugLog = (...args: any[]) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(...args);
+  }
+};
+
 // 🚨 파일 로드 확인 및 전역 에러 감지 리스너 등록
 if (typeof window !== "undefined") {
-  console.log("=".repeat(80));
-  console.log(
+  debugLog("=".repeat(80));
+  debugLog(
     "🚨🚨🚨 [FILE LOADED] sign-in-with-redirect.tsx 파일이 로드되었습니다!",
   );
-  console.log("=".repeat(80));
+  debugLog("=".repeat(80));
 
   // 🔥 전역 에러 감지 시스템 (컴포넌트 언마운트 후에도 작동)
   if (!(window as any).__clerkErrorListenerActive) {
     (window as any).__clerkErrorListenerActive = true;
-    console.log("🔧 [Global System] 전역 에러 감지 시스템 활성화");
+    debugLog("🔧 [Global System] 전역 에러 감지 시스템 활성화");
 
     let globalCheckCount = 0;
     let globalIntervalId: NodeJS.Timeout | null = null;
@@ -47,9 +54,9 @@ if (typeof window !== "undefined") {
       const allText = document.body.textContent || "";
       const allTextLower = allText.toLowerCase();
 
-      // 20번마다 로그 (1초마다)
-      if (globalCheckCount % 20 === 0) {
-        console.log(
+      // 100번마다 로그 (5초마다) - 개발 환경에서만
+      if (process.env.NODE_ENV === "development" && globalCheckCount % 100 === 0) {
+        debugLog(
           `🔍 [Global System] 체크 #${globalCheckCount} (${(
             (globalCheckCount * 50) /
             1000
@@ -69,10 +76,10 @@ if (typeof window !== "undefined") {
       );
 
       if (foundPatterns.length > 0 && !globalModalShown) {
-        console.log("=".repeat(80));
-        console.log("✅✅✅ [Global System] External Account 에러 감지!");
-        console.log("📝 [Global System] 발견된 패턴:", foundPatterns);
-        console.log("=".repeat(80));
+        debugLog("=".repeat(80));
+        debugLog("✅✅✅ [Global System] External Account 에러 감지!");
+        debugLog("📝 [Global System] 발견된 패턴:", foundPatterns);
+        debugLog("=".repeat(80));
 
         globalModalShown = true;
 
@@ -97,7 +104,7 @@ if (typeof window !== "undefined") {
         allText.includes("external account") &&
         allText.includes("not found")
       ) {
-        console.log("🔍 [Global System] MutationObserver - 에러 감지!");
+        debugLog("🔍 [Global System] MutationObserver - 에러 감지!");
         globalErrorCheck();
       }
     });
@@ -106,7 +113,7 @@ if (typeof window !== "undefined") {
     const startGlobalCheck = () => {
       if (globalIntervalId) return; // 이미 실행 중
 
-      console.log("🚀 [Global System] 전역 체크 시작");
+      debugLog("🚀 [Global System] 전역 체크 시작");
       globalObserver.observe(document.body, {
         childList: true,
         subtree: true,
@@ -135,7 +142,7 @@ if (typeof window !== "undefined") {
 
     // 페이지 전환 감지
     window.addEventListener("popstate", () => {
-      console.log("🔍 [Global System] 페이지 전환 감지 - 체크 재시작");
+      debugLog("🔍 [Global System] 페이지 전환 감지 - 체크 재시작");
       globalCheckCount = 0;
       globalModalShown = false;
       if (globalIntervalId) {
@@ -202,8 +209,8 @@ export default function SignInWithRedirect({
   onboardingUrl,
 }: SignInWithRedirectProps) {
   // 🚨 컴포넌트가 렌더링되는지 확인
-  console.log("🚨🚨🚨 [SignInWithRedirect] 컴포넌트 렌더링됨!");
-  console.log("📋 [SignInWithRedirect] Props:", {
+  debugLog("🚨🚨🚨 [SignInWithRedirect] 컴포넌트 렌더링됨!");
+  debugLog("📋 [SignInWithRedirect] Props:", {
     path,
     signUpUrl,
     onboardingUrl,
@@ -215,17 +222,17 @@ export default function SignInWithRedirect({
 
   // 🎯 전역 에러 감지: Clerk가 DOM에 렌더링하는 에러 메시지를 감지
   useEffect(() => {
-    console.log("=".repeat(60));
-    console.log("🚨 [useEffect] 실행됨!");
-    console.log("🔍 [Global Listener] 에러 감지 리스너 시작");
-    console.log("=".repeat(60));
+    debugLog("=".repeat(60));
+    debugLog("🚨 [useEffect] 실행됨!");
+    debugLog("🔍 [Global Listener] 에러 감지 리스너 시작");
+    debugLog("=".repeat(60));
 
     // 🔥 전역 이벤트 리스너 등록 (전역 시스템에서 발생한 이벤트 감지)
     const handleGlobalError = (event: CustomEvent) => {
-      console.log("=".repeat(60));
-      console.log("✅✅✅ [Component] 전역 시스템에서 에러 감지 이벤트 수신!");
-      console.log("📝 [Component] 패턴:", event.detail);
-      console.log("=".repeat(60));
+      debugLog("=".repeat(60));
+      debugLog("✅✅✅ [Component] 전역 시스템에서 에러 감지 이벤트 수신!");
+      debugLog("📝 [Component] 패턴:", event.detail);
+      debugLog("=".repeat(60));
       setShowSignUpModal(true);
     };
 
@@ -236,7 +243,7 @@ export default function SignInWithRedirect({
 
     // 전역 모달 표시 함수 등록
     (window as any).showSignUpModal = () => {
-      console.log("🔧 [Component] 전역 함수 호출 - 모달 표시");
+      debugLog("🔧 [Component] 전역 함수 호출 - 모달 표시");
       setShowSignUpModal(true);
     };
 
@@ -255,10 +262,10 @@ export default function SignInWithRedirect({
       const allText = document.body.textContent || "";
       const allTextLower = allText.toLowerCase();
 
-      // 🔥 로그 출력 빈도 조절 (20번마다 - 50ms * 20 = 1초마다)
-      const shouldLog = checkCount % 20 === 0;
+      // 🔥 로그 출력 빈도 조절 (100번마다 - 50ms * 100 = 5초마다) - 개발 환경에서만
+      const shouldLog = process.env.NODE_ENV === "development" && checkCount % 100 === 0;
       if (shouldLog) {
-        console.log(
+        debugLog(
           `🔍 [Global Listener] 체크 #${checkCount} (${(
             (checkCount * 50) /
             1000
@@ -284,14 +291,14 @@ export default function SignInWithRedirect({
 
       if (foundPatterns.length >= 2) {
         // 최소 2개 이상의 패턴이 일치하면 에러로 판단
-        console.log("=".repeat(60));
-        console.log("✅✅✅ [Global Listener] External Account 에러 감지!");
-        console.log("📝 [Global Listener] 발견된 패턴:", foundPatterns);
-        console.log(
+        debugLog("=".repeat(60));
+        debugLog("✅✅✅ [Global Listener] External Account 에러 감지!");
+        debugLog("📝 [Global Listener] 발견된 패턴:", foundPatterns);
+        debugLog(
           "📝 [Global Listener] 감지된 텍스트 샘플:",
           allText.substring(0, 500),
         );
-        console.log("=".repeat(60));
+        debugLog("=".repeat(60));
 
         if (!modalShown) {
           hasDetected = true;
@@ -326,13 +333,14 @@ export default function SignInWithRedirect({
           elements.forEach((element, index) => {
             const text = element.textContent?.toLowerCase() || "";
             if (text.length > 0) {
-              // 에러 관련 텍스트가 있으면 상세 로그
+              // 에러 관련 텍스트가 있으면 상세 로그 (개발 환경에서만)
               if (
-                text.includes("external") ||
+                process.env.NODE_ENV === "development" &&
+                (text.includes("external") ||
                 text.includes("account") ||
-                text.includes("not found")
+                text.includes("not found"))
               ) {
-                console.log(
+                debugLog(
                   `🔍 [Global Listener] 요소 ${index} 텍스트:`,
                   text.substring(0, 200),
                 );
@@ -342,14 +350,14 @@ export default function SignInWithRedirect({
                 text.includes("external account") &&
                 text.includes("not found")
               ) {
-                console.log("=".repeat(60));
-                console.log(
+                debugLog("=".repeat(60));
+                debugLog(
                   `✅✅✅ [Global Listener] 요소 ${index}에서 에러 감지!`,
                 );
-                console.log(
+                debugLog(
                   `📝 [Global Listener] 전체 텍스트: ${text.substring(0, 300)}`,
                 );
-                console.log("=".repeat(60));
+                debugLog("=".repeat(60));
 
                 if (!modalShown) {
                   hasDetected = true;
@@ -368,7 +376,7 @@ export default function SignInWithRedirect({
 
     // 즉시 체크
     if (checkForClerkError()) {
-      console.log("✅ [Global Listener] 즉시 감지됨!");
+      debugLog("✅ [Global Listener] 즉시 감지됨!");
       return;
     }
 
@@ -386,7 +394,7 @@ export default function SignInWithRedirect({
       });
 
       if (hasRelevantChange) {
-        console.log(
+        debugLog(
           "🔍 [MutationObserver] 에러 관련 DOM 변화 감지 - 즉시 체크 실행",
         );
         if (checkForClerkError() && intervalId) {
@@ -410,7 +418,7 @@ export default function SignInWithRedirect({
       const detected = checkForClerkError();
 
       if (detected || checkCount >= MAX_CHECKS) {
-        console.log(
+        debugLog(
           `🛑 [Global Listener] 체크 종료 (detected: ${detected}, count: ${checkCount}, 시간: ${(
             (checkCount * 50) /
             1000
@@ -429,7 +437,7 @@ export default function SignInWithRedirect({
       const errorMessage = event.message?.toLowerCase() || "";
       const errorSource = event.filename || "";
 
-      console.log("🔍 [Window Error] 에러 이벤트:", {
+      debugLog("🔍 [Window Error] 에러 이벤트:", {
         message: errorMessage,
         source: errorSource,
       });
@@ -439,7 +447,7 @@ export default function SignInWithRedirect({
         errorMessage.includes("not found") ||
         errorSource.includes("clerk")
       ) {
-        console.log("✅✅✅ [Window Error] External Account 에러 감지!");
+        debugLog("✅✅✅ [Window Error] External Account 에러 감지!");
         if (!modalShown) {
           hasDetected = true;
           modalShown = true;
@@ -450,7 +458,7 @@ export default function SignInWithRedirect({
 
     // 🔥 페이지 로드/변경 시에도 체크
     const handlePageLoad = () => {
-      console.log("🔍 [Page Load] 페이지 로드/변경 감지 - 즉시 체크 실행");
+      debugLog("🔍 [Page Load] 페이지 로드/변경 감지 - 즉시 체크 실행");
       setTimeout(() => {
         checkForClerkError();
       }, 100);
@@ -473,25 +481,25 @@ export default function SignInWithRedirect({
         handleGlobalError as EventListener,
       );
       delete (window as any).showSignUpModal;
-      console.log("🛑 [Global Listener] 리스너 정리");
+      debugLog("🛑 [Global Listener] 리스너 정리");
     };
   }, []);
 
   // 모달 상태 추적
   useEffect(() => {
     if (showSignUpModal) {
-      console.log("=".repeat(60));
-      console.log("🎯🎯🎯 [Modal] 모달이 열렸습니다!");
-      console.log("=".repeat(60));
+      debugLog("=".repeat(60));
+      debugLog("🎯🎯🎯 [Modal] 모달이 열렸습니다!");
+      debugLog("=".repeat(60));
     } else {
-      console.log("🔒 [Modal] 모달이 닫혔습니다.");
+      debugLog("🔒 [Modal] 모달이 닫혔습니다.");
     }
   }, [showSignUpModal]);
 
   // 에러 메시지 숨김 처리: 모달이 표시되면 Clerk 에러 메시지 숨기기
   useEffect(() => {
     if (showSignUpModal) {
-      console.log("🔧 [Modal] Clerk 에러 메시지 숨김 처리 시작");
+      debugLog("🔧 [Modal] Clerk 에러 메시지 숨김 처리 시작");
 
       // Clerk 에러 메시지 요소 찾기 및 숨김
       const hideErrorMessages = () => {
@@ -516,7 +524,7 @@ export default function SignInWithRedirect({
               text.includes("account was not found")
             ) {
               (element as HTMLElement).style.display = "none";
-              console.log("✅ [Modal] 에러 메시지 숨김:", selector);
+              debugLog("✅ [Modal] 에러 메시지 숨김:", selector);
             }
           });
         });
@@ -539,7 +547,7 @@ export default function SignInWithRedirect({
 
       return () => {
         observer.disconnect();
-        console.log("🛑 [Modal] 에러 메시지 숨김 처리 정리");
+        debugLog("🛑 [Modal] 에러 메시지 숨김 처리 정리");
       };
     }
   }, [showSignUpModal]);
@@ -555,8 +563,8 @@ export default function SignInWithRedirect({
 
   // 모달 확인 핸들러
   const handleSignUpConfirm = () => {
-    console.log("=".repeat(60));
-    console.log("📝 [Modal] 확인 버튼 클릭!");
+    debugLog("=".repeat(60));
+    debugLog("📝 [Modal] 확인 버튼 클릭!");
 
     // 모달 확인 후 현재 로그인 페이지로 리다이렉트
     // isRetailer 플래그를 사용하여 정확한 경로 결정
@@ -580,14 +588,14 @@ export default function SignInWithRedirect({
       redirectUrl = isRetailer ? "/sign-in/retailer" : "/sign-in/wholesaler";
     }
 
-    console.log("📝 [Modal] 리다이렉트 대상:", redirectUrl);
-    console.log("📝 [Modal] pathname (현재 경로):", pathname);
-    console.log("📝 [Modal] path prop:", path);
-    console.log(
+    debugLog("📝 [Modal] 리다이렉트 대상:", redirectUrl);
+    debugLog("📝 [Modal] pathname (현재 경로):", pathname);
+    debugLog("📝 [Modal] path prop:", path);
+    debugLog(
       "📝 [Modal] 사용자 유형:",
       isRetailer ? "소매사업자" : "도매사업자",
     );
-    console.log("=".repeat(60));
+    debugLog("=".repeat(60));
 
     setShowSignUpModal(false);
 
