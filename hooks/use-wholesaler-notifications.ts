@@ -20,10 +20,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
-import { useUser } from "@clerk/nextjs";
 import {
   getUnreadOrdersCount,
   getRecentOrderNotifications,
@@ -31,40 +30,7 @@ import {
   type OrderNotification,
 } from "@/lib/supabase/queries/notifications";
 import { subscribeToNewOrders } from "@/lib/supabase/realtime";
-
-/**
- * 도매점 ID 조회 (내부 헬퍼 함수)
- */
-async function getWholesalerId(
-  supabase: ReturnType<typeof useClerkSupabaseClient>,
-  userId: string,
-): Promise<string | null> {
-  // 프로필 조회
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .single();
-
-  if (profileError || !profile) {
-    console.error("❌ [notifications-hook] 프로필 조회 오류:", profileError);
-    return null;
-  }
-
-  // wholesaler 정보 조회
-  const { data: wholesaler, error: wholesalerError } = await supabase
-    .from("wholesalers")
-    .select("id")
-    .eq("profile_id", profile.id)
-    .single();
-
-  if (wholesalerError || !wholesaler) {
-    console.error("❌ [notifications-hook] 도매점 정보 조회 오류:", wholesalerError);
-    return null;
-  }
-
-  return wholesaler.id;
-}
+import { useWholesaler } from "@/hooks/useWholesaler";
 
 /**
  * 도매점 알림 관리 훅
@@ -73,29 +39,22 @@ async function getWholesalerId(
  */
 export function useWholesalerNotifications() {
   const supabase = useClerkSupabaseClient();
-  const { user } = useUser();
   const queryClient = useQueryClient();
-  const [wholesalerId, setWholesalerId] = useState<string | null>(null);
+  const { data: wholesaler, isLoading, error } = useWholesaler();
 
-  // 도매점 ID 조회
+  // 에러 로깅
   useEffect(() => {
-    const fetchWholesalerId = async () => {
-      if (!user) {
-        setWholesalerId(null);
-        return;
-      }
+    if (error) {
+      console.error(
+        "❌ [notifications-hook] 도매점 정보 조회 오류:",
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error, null, 2),
+      );
+    }
+  }, [error]);
 
-      try {
-        const id = await getWholesalerId(supabase, user.id);
-        setWholesalerId(id);
-      } catch (error) {
-        console.error("❌ [notifications-hook] 도매점 ID 조회 예외:", error);
-        setWholesalerId(null);
-      }
-    };
-
-    fetchWholesalerId();
-  }, [user, supabase]);
+  const wholesalerId = wholesaler?.id ?? null;
 
   // 읽지 않은 주문 개수 조회
   const {

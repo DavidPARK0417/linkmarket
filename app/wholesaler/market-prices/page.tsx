@@ -194,8 +194,8 @@ export default function MarketPricesPage() {
   const hasError = !!error;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="px-4 md:px-6 pt-4 md:pt-6">
+    <div className="flex flex-col gap-4 -mx-6 -my-6">
+      <div className="px-6 md:px-8 pt-6 md:pt-8">
         <PageHeader
           title="시세 조회"
           description="전국 농수산물 경매가격을 지역별, 품목별로 확인하세요."
@@ -209,7 +209,7 @@ export default function MarketPricesPage() {
 
       {/* 에러 표시 */}
       {hasError && (
-        <div className="mx-4 md:mx-6 border border-destructive bg-destructive/10 p-4">
+        <div className="mx-6 md:mx-8 border border-destructive bg-destructive/10 p-4">
           <div className="flex gap-2">
             <AlertCircle className="size-5 text-destructive" />
             <div className="flex flex-col gap-1">
@@ -241,7 +241,7 @@ export default function MarketPricesPage() {
 
       {/* 검색 결과 요약 */}
       {hasSearched && !isLoading && filteredPrices.length > 0 && (
-        <div className="px-4 md:px-6 text-sm text-muted-foreground">
+        <div className="px-6 md:px-8 text-sm text-muted-foreground">
           총{" "}
           <span className="font-semibold text-foreground">
             {filteredPrices.length}개
@@ -254,7 +254,7 @@ export default function MarketPricesPage() {
       {hasSearched && (
         <div className="flex-1 overflow-hidden">
           <div className="h-full flex flex-col">
-            <div className="px-4 md:px-6 py-4 border-b">
+            <div className="px-6 md:px-8 py-4 border-b">
               <h2 className="text-lg font-semibold">시세 목록</h2>
             </div>
             <div className="flex-1 overflow-auto">

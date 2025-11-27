@@ -20,13 +20,13 @@
 
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
-import { useUser } from "@clerk/nextjs";
 import { subscribeToNewOrders } from "@/lib/supabase/realtime";
+import { useWholesaler } from "@/hooks/useWholesaler";
 import PageHeader from "@/components/common/PageHeader";
 import StatCard from "@/components/wholesaler/Dashboard/StatCard";
 import RecentOrders from "@/components/wholesaler/Dashboard/RecentOrders";
@@ -61,50 +61,14 @@ async function fetchDashboardStats(): Promise<DashboardStats> {
   return response.json();
 }
 
-/**
- * 도매점 ID 조회 함수
- */
-async function getWholesalerId(
-  supabase: ReturnType<typeof useClerkSupabaseClient>,
-  userId: string,
-): Promise<string | null> {
-  try {
-    // 프로필 조회
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("clerk_user_id", userId)
-      .single();
-
-    if (profileError || !profile) {
-      console.error("❌ [dashboard] 프로필 조회 오류:", profileError);
-      return null;
-    }
-
-    // wholesaler 정보 조회
-    const { data: wholesaler, error: wholesalerError } = await supabase
-      .from("wholesalers")
-      .select("id")
-      .eq("profile_id", profile.id)
-      .single();
-
-    if (wholesalerError || !wholesaler) {
-      console.error("❌ [dashboard] 도매점 정보 조회 오류:", wholesalerError);
-      return null;
-    }
-
-    return wholesaler.id;
-  } catch (error) {
-    console.error("❌ [dashboard] 도매점 ID 조회 예외:", error);
-    return null;
-  }
-}
-
 export default function DashboardPage() {
   const router = useRouter();
   const supabase = useClerkSupabaseClient();
-  const { user, isLoaded: isUserLoaded } = useUser();
-  const [wholesalerId, setWholesalerId] = useState<string | null>(null);
+  const {
+    data: wholesaler,
+    isLoading: isWholesalerLoading,
+    error: wholesalerError,
+  } = useWholesaler();
 
   // 대시보드 통계 데이터 조회
   const {
@@ -117,25 +81,19 @@ export default function DashboardPage() {
     refetchInterval: 30000, // 30초마다 자동 갱신
   });
 
-  // 도매점 ID 조회
+  // 에러 로깅
   useEffect(() => {
-    async function fetchWholesalerId() {
-      if (!isUserLoaded || !user || !supabase) return;
-
-      try {
-        console.log("🔍 [dashboard] 도매점 ID 조회 시작");
-        const id = await getWholesalerId(supabase, user.id);
-        if (id) {
-          console.log("✅ [dashboard] 도매점 ID 조회 완료:", id);
-          setWholesalerId(id);
-        }
-      } catch (error) {
-        console.error("❌ [dashboard] 도매점 ID 조회 오류:", error);
-      }
+    if (wholesalerError) {
+      console.error(
+        "❌ [dashboard] 도매점 정보 조회 오류:",
+        wholesalerError instanceof Error
+          ? wholesalerError.message
+          : JSON.stringify(wholesalerError, null, 2),
+      );
     }
+  }, [wholesalerError]);
 
-    fetchWholesalerId();
-  }, [isUserLoaded, user, supabase]);
+  const wholesalerId = wholesaler?.id ?? null;
 
   // 실시간 주문 알림 구독
   useEffect(() => {

@@ -93,6 +93,7 @@ export async function getCurrentUser() {
  */
 export async function getUserProfile(): Promise<ProfileWithDetails | null> {
   try {
+    console.log("🔍 [auth] getUserProfile 시작");
     const user = await getCurrentUser();
 
     if (!user) {
@@ -100,9 +101,18 @@ export async function getUserProfile(): Promise<ProfileWithDetails | null> {
       return null;
     }
 
+    console.log("✅ [auth] getUserProfile: Clerk 사용자 확인됨", {
+      userId: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+    });
+
     const supabase = createClerkSupabaseClient();
 
     // clerk_user_id로 프로필 조회 (retailers, wholesalers 포함)
+    console.log("🔍 [auth] getUserProfile: Supabase 프로필 조회 시작", {
+      clerkUserId: user.id,
+    });
+    
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("*, retailers(*), wholesalers(*)")
@@ -114,6 +124,7 @@ export async function getUserProfile(): Promise<ProfileWithDetails | null> {
       if (error.code === "PGRST116") {
         console.log(
           "⚠️ [auth] getUserProfile: 프로필 없음 (정상 - 신규 사용자)",
+          { clerkUserId: user.id },
         );
         return null;
       }
@@ -124,21 +135,43 @@ export async function getUserProfile(): Promise<ProfileWithDetails | null> {
         message: error.message,
         details: error.details,
         hint: error.hint,
-        error,
+        clerkUserId: user.id,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        } : error,
       });
       return null;
     }
 
     if (!profile) {
-      console.log("⚠️ [auth] getUserProfile: 프로필 없음");
+      console.log("⚠️ [auth] getUserProfile: 프로필 없음", {
+        clerkUserId: user.id,
+      });
       return null;
     }
+
+    console.log("✅ [auth] getUserProfile: 프로필 조회 완료", {
+      profileId: profile.id,
+      role: profile.role,
+      hasWholesalers: !!profile.wholesalers,
+      wholesalersCount: profile.wholesalers?.length ?? 0,
+      hasRetailers: !!profile.retailers,
+      retailersCount: profile.retailers?.length ?? 0,
+    });
 
     return profile as ProfileWithDetails;
   } catch (error) {
     console.error("❌ [auth] getUserProfile 예외:", {
       message: error instanceof Error ? error.message : "알 수 없는 오류",
-      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause,
+      } : error,
     });
     return null;
   }
@@ -261,9 +294,23 @@ export async function requireAdmin(): Promise<ProfileWithDetails> {
   // 먼저 인증 확인
   const profile = await requireAuth();
 
+  // 🔍 디버깅: 실제 조회되는 값 확인
+  console.log("🔍 [auth] requireAdmin 디버깅:", {
+    profileId: profile.id,
+    email: profile.email,
+    role: profile.role,
+    roleType: typeof profile.role,
+    roleStringified: JSON.stringify(profile.role),
+    isAdmin: profile.role === "admin",
+    clerkUserId: profile.clerk_user_id,
+  });
+
   // 관리자 권한 확인
   if (profile.role !== "admin") {
-    console.log("🚫 [auth] requireAdmin: 관리자 권한 없음, 홈으로 리다이렉트");
+    console.log("🚫 [auth] requireAdmin: 관리자 권한 없음, 홈으로 리다이렉트", {
+      actualRole: profile.role,
+      expectedRole: "admin",
+    });
     redirect("/");
   }
 

@@ -16,12 +16,27 @@ export async function GET() {
 
     return NextResponse.json({ products });
   } catch (error) {
-    console.error("❌ [low-stock-api] 재고 부족 상품 조회 오류:", error);
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error("❌ [low-stock-api] 재고 부족 상품 조회 오류:", {
+      message: errorMessage,
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause,
+      } : error,
+      stack: errorStack,
+    });
 
     return NextResponse.json(
       {
         error: "재고 부족 상품을 불러오는 중 오류가 발생했습니다.",
-        message: error instanceof Error ? error.message : "알 수 없는 오류",
+        message: errorMessage,
+        ...(process.env.NODE_ENV === "development" && errorStack && {
+          stack: errorStack,
+        }),
       },
       { status: 500 },
     );

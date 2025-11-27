@@ -44,6 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrderTable from "@/components/wholesaler/Orders/OrderTable";
 import OrderDateRangePicker from "@/components/wholesaler/Orders/OrderDateRangePicker";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
+import { useWholesaler } from "@/hooks/useWholesaler";
 import {
   subscribeToNewOrders,
   subscribeToOrderUpdates,
@@ -89,10 +90,11 @@ export default function OrdersPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const supabase = useClerkSupabaseClient();
-  const { user, isLoaded: isUserLoaded } = useUser();
-
-  // 도매점 ID 상태
-  const [wholesalerId, setWholesalerId] = React.useState<string | null>(null);
+  const {
+    data: wholesaler,
+    isLoading: isWholesalerLoading,
+    error: wholesalerError,
+  } = useWholesaler();
 
   // 필터 상태
   const [activeTab, setActiveTab] = React.useState<string>("all");
@@ -102,59 +104,19 @@ export default function OrdersPage() {
   );
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  // 도매점 ID 조회
+  // 에러 로깅
   React.useEffect(() => {
-    const fetchWholesalerId = async () => {
-      if (!isUserLoaded || !user) {
-        return;
-      }
+    if (wholesalerError) {
+      console.error(
+        "❌ [orders-page] 도매점 정보 조회 오류:",
+        wholesalerError instanceof Error
+          ? wholesalerError.message
+          : JSON.stringify(wholesalerError, null, 2),
+      );
+    }
+  }, [wholesalerError]);
 
-      try {
-        console.group("🔍 [orders-page] 도매점 ID 조회 시작");
-        console.log("Clerk userId:", user.id);
-
-        // 프로필 조회
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("clerk_user_id", user.id)
-          .single();
-
-        if (profileError || !profile) {
-          console.error("❌ [orders-page] 프로필 조회 오류:", profileError);
-          toast.error("프로필 정보를 불러올 수 없습니다.");
-          return;
-        }
-
-        console.log("✅ [orders-page] 프로필 조회 완료:", profile.id);
-
-        // wholesaler 정보 조회
-        const { data: wholesaler, error: wholesalerError } = await supabase
-          .from("wholesalers")
-          .select("id")
-          .eq("profile_id", profile.id)
-          .single();
-
-        if (wholesalerError || !wholesaler) {
-          console.error(
-            "❌ [orders-page] 도매점 정보 조회 오류:",
-            wholesalerError,
-          );
-          toast.error("도매점 정보를 불러올 수 없습니다.");
-          return;
-        }
-
-        console.log("✅ [orders-page] 도매점 ID 조회 완료:", wholesaler.id);
-        setWholesalerId(wholesaler.id);
-        console.groupEnd();
-      } catch (error) {
-        console.error("❌ [orders-page] 도매점 ID 조회 예외:", error);
-        toast.error("도매점 정보를 불러오는 중 오류가 발생했습니다.");
-      }
-    };
-
-    fetchWholesalerId();
-  }, [isUserLoaded, user, supabase]);
+  const wholesalerId = wholesaler?.id ?? null;
 
   // 필터 객체 생성
   const filter: OrderFilter = React.useMemo(() => {
@@ -309,12 +271,25 @@ export default function OrdersPage() {
     setActiveTab("all");
   };
 
-  // 도매점 ID가 없으면 로딩 표시
-  if (!wholesalerId) {
+  // 도매점 ID가 없으면 로딩 또는 에러 표시
+  if (isWholesalerLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-muted-foreground">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!wholesalerId) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-destructive">도매점 정보를 불러올 수 없습니다.</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            도매점 등록이 필요합니다.
+          </p>
         </div>
       </div>
     );

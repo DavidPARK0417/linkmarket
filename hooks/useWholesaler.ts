@@ -44,8 +44,29 @@ async function fetchWholesalerInfo(
       .eq("clerk_user_id", userId)
       .single();
 
-    if (profileError || !profile) {
-      console.error("❌ [useWholesaler] 프로필 조회 오류:", profileError);
+    if (profileError) {
+      // PGRST116은 "no rows returned" 에러 (프로필이 없는 경우, 정상)
+      if (profileError.code === "PGRST116") {
+        console.log(
+          "⚠️ [useWholesaler] 프로필 없음 (정상 - 신규 사용자 또는 프로필 미생성)",
+          { clerkUserId: userId },
+        );
+        console.groupEnd();
+        return null;
+      }
+
+      // 다른 에러는 실제 에러로 처리
+      console.error("❌ [useWholesaler] 프로필 조회 오류:", 
+        profileError instanceof Error
+          ? profileError.message
+          : JSON.stringify(profileError, null, 2),
+      );
+      console.groupEnd();
+      return null;
+    }
+
+    if (!profile) {
+      console.log("⚠️ [useWholesaler] 프로필 없음", { clerkUserId: userId });
       console.groupEnd();
       return null;
     }
@@ -59,11 +80,30 @@ async function fetchWholesalerInfo(
       .eq("profile_id", profile.id)
       .single();
 
-    if (wholesalerError || !wholesaler) {
+    if (wholesalerError) {
+      // PGRST116은 "no rows returned" 에러 (도매점 정보가 없는 경우, 정상)
+      if (wholesalerError.code === "PGRST116") {
+        console.log(
+          "⚠️ [useWholesaler] 도매점 정보 없음 (정상 - 도매점 등록 필요)",
+          { profileId: profile.id },
+        );
+        console.groupEnd();
+        return null;
+      }
+
+      // 다른 에러는 실제 에러로 처리
       console.error(
         "❌ [useWholesaler] 도매점 정보 조회 오류:",
-        wholesalerError,
+        wholesalerError instanceof Error
+          ? wholesalerError.message
+          : JSON.stringify(wholesalerError, null, 2),
       );
+      console.groupEnd();
+      return null;
+    }
+
+    if (!wholesaler) {
+      console.log("⚠️ [useWholesaler] 도매점 정보 없음", { profileId: profile.id });
       console.groupEnd();
       return null;
     }
