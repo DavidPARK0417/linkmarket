@@ -23,7 +23,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { useUser } from "@clerk/nextjs";
 import { subscribeToNewOrders } from "@/lib/supabase/realtime";
@@ -102,7 +102,6 @@ async function getWholesalerId(
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const supabase = useClerkSupabaseClient();
   const { user, isLoaded: isUserLoaded } = useUser();
   const [wholesalerId, setWholesalerId] = useState<string | null>(null);
@@ -151,17 +150,12 @@ export default function DashboardPage() {
         console.log("🔔 [dashboard] 새 주문 알림:", order);
 
         // 토스트 알림 표시
-        toast({
-          title: "새 주문이 들어왔습니다! 🎉",
+        toast.success("새 주문이 들어왔습니다! 🎉", {
           description: `주문번호: ${order.order_number}`,
-          action: (
-            <button
-              onClick={() => router.push(`/wholesaler/orders/${order.id}`)}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700"
-            >
-              확인하기
-            </button>
-          ),
+          action: {
+            label: "확인하기",
+            onClick: () => router.push(`/wholesaler/orders/${order.id}`),
+          },
         });
       },
     );
@@ -171,7 +165,7 @@ export default function DashboardPage() {
       console.log("🧹 [dashboard] Cleaning up order subscription");
       unsubscribe();
     };
-  }, [wholesalerId, supabase, router, toast]);
+  }, [wholesalerId, supabase, router]);
 
   return (
     <div className="space-y-6">

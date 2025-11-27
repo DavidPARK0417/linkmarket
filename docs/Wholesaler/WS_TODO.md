@@ -1307,13 +1307,13 @@ Anonymous Code 자동 생성 로직을 구현해줘.
 ⚠️ 추가로 필요한 작업이나 수정사항이 있으면 사용자에게 먼저 질문해주세요.
 ```
 
-- [ ] **훅 구현**
-  - [ ] `hooks/useWholesaler.ts` 구현
-    - [ ] 현재 도매점 정보 조회
-    - [ ] Clerk user_id로 wholesaler 정보 가져오기
-  - [ ] `hooks/useDashboardStats.ts` 구현
-    - [ ] 대시보드 통계 데이터 조회
-    - [ ] 실시간 업데이트
+- [x] **훅 구현**
+  - [x] `hooks/useWholesaler.ts` 구현
+    - [x] 현재 도매점 정보 조회
+    - [x] Clerk user_id로 wholesaler 정보 가져오기
+  - [x] `hooks/useDashboardStats.ts` 구현
+    - [x] 대시보드 통계 데이터 조회
+    - [x] 실시간 업데이트
 
 ### 💸 정산 관리 (Week 7 후반)
 

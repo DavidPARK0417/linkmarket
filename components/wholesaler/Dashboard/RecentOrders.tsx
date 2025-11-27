@@ -11,7 +11,7 @@
  * 4. 빈 상태 처리 (EmptyState)
  *
  * @dependencies
- * - lib/supabase/queries/orders.ts
+ * - app/api/wholesaler/dashboard/recent-orders/route.ts
  * - components/ui/card.tsx
  * - components/ui/table.tsx
  * - components/ui/button.tsx
@@ -19,7 +19,9 @@
  * - components/common/EmptyState.tsx
  */
 
-import { getOrders } from "@/lib/supabase/queries/orders";
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -32,25 +34,45 @@ import {
 import { Button } from "@/components/ui/button";
 import OrderStatusBadge from "@/components/wholesaler/Orders/OrderStatusBadge";
 import EmptyState from "@/components/common/EmptyState";
-import { ShoppingCart, ArrowRight } from "lucide-react";
+import { ShoppingCart, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import type { OrderDetail } from "@/types/order";
 
-export default async function RecentOrders() {
-  console.log("🔍 [RecentOrders] 최근 주문 조회 시작");
+/**
+ * 최근 주문 조회 함수
+ */
+async function fetchRecentOrders(): Promise<OrderDetail[]> {
+  const response = await fetch("/api/wholesaler/dashboard/recent-orders");
+  if (!response.ok) {
+    throw new Error("최근 주문 조회 실패");
+  }
+  const data = await response.json();
+  return data.orders ?? [];
+}
 
-  // 최근 주문 5개 조회
-  const { orders } = await getOrders({
-    page: 1,
-    pageSize: 5,
-    sortBy: "created_at",
-    sortOrder: "desc",
+export default function RecentOrders() {
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["recent-orders"],
+    queryFn: fetchRecentOrders,
+    refetchInterval: 30000, // 30초마다 자동 갱신
   });
 
-  console.log("✅ [RecentOrders] 최근 주문 조회 완료", {
-    count: orders.length,
-  });
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">최근 주문</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
