@@ -144,7 +144,7 @@ const Navbar = () => {
               </div>
             )}
             <UserButton
-              afterSignOutUrl="/"
+              afterSignOutUrl="/sign-in/wholesaler"
               appearance={{
                 elements: {
                   avatarBox: "w-8 h-8",

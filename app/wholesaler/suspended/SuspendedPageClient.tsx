@@ -37,7 +37,7 @@ export function SuspendedPageClient({
   const handleSignOut = async () => {
     console.log("🚪 [suspended] 로그아웃 시작");
     await signOut();
-    router.push("/sign-in");
+    router.push("/sign-in/wholesaler");
   };
 
   return (

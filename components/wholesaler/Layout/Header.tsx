@@ -120,7 +120,7 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
         {/* 사용자 드롭다운 메뉴 - 클라이언트 사이드에서만 렌더링 */}
         {mounted && isLoaded && (
           <UserButton
-            afterSignOutUrl="/"
+            afterSignOutUrl="/sign-in/wholesaler"
             appearance={{
               elements: {
                 avatarBox: "w-8 h-8",

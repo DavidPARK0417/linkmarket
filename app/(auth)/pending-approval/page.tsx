@@ -199,7 +199,7 @@ export default function PendingApprovalPage() {
   const handleLogout = async () => {
     try {
       console.log("🚪 [pending-approval] 로그아웃 시작");
-      await signOut({ redirectUrl: "/" });
+      await signOut({ redirectUrl: "/sign-in/wholesaler" });
     } catch (err) {
       console.error("❌ [pending-approval] 로그아웃 오류:", err);
     }
