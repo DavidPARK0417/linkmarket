@@ -1264,25 +1264,25 @@ Anonymous Code 자동 생성 로직을 구현해줘.
 
 #### 2. 대시보드 페이지
 
-- [ ] **`app/wholesaler/dashboard/page.tsx` 구현**
+- [x] **`app/wholesaler/dashboard/page.tsx` 구현** ✅
 
-  - [ ] 통계 카드 4개
-    - [ ] 오늘 주문 (건수)
-    - [ ] 출고 예정 (건수)
-    - [ ] 이번 주 정산 예정 (금액)
-    - [ ] 전체 상품 (개수)
-  - [ ] Supabase에서 실제 데이터 조회
-    - [ ] 오늘 주문: `orders` 테이블 COUNT (created_at = 오늘)
-    - [ ] 출고 예정: `orders` 테이블 COUNT (status = confirmed) - ⚠️ preparing 제거
-    - [ ] 정산 예정: `settlements` 테이블 SUM (status = pending)
-    - [ ] 전체 상품: `products` 테이블 COUNT (is_active = true)
-  - [ ] 최근 주문 목록 컴포넌트
-  - [ ] 재고 부족 알림 섹션
-    - [ ] 재고 10개 이하 상품 표시
-    - [ ] "재고 추가" 버튼
-  - [ ] 실시간 업데이트 (Realtime 구독)
-  - [ ] 로딩 상태
-  - [ ] 에러 처리
+  - [x] 통계 카드 4개 ✅
+    - [x] 오늘 주문 (건수) ✅
+    - [x] 출고 예정 (건수) ✅
+    - [x] 이번 주 정산 예정 (금액) ✅
+    - [x] 전체 상품 (개수) ✅
+  - [x] Supabase에서 실제 데이터 조회 ✅
+    - [x] 오늘 주문: `orders` 테이블 COUNT (created_at = 오늘) ✅
+    - [x] 출고 예정: `orders` 테이블 COUNT (status = confirmed) ✅
+    - [x] 정산 예정: `settlements` 테이블 SUM (status = pending, scheduled_payout_at 기준) ✅
+    - [x] 전체 상품: `products` 테이블 COUNT (is_active = true) ✅
+  - [x] 최근 주문 목록 컴포넌트 ✅
+  - [x] 재고 부족 알림 섹션 ✅
+    - [x] 재고 10개 이하 상품 표시 ✅
+    - [x] "재고 추가" 버튼 ✅ (상품 수정 페이지로 이동)
+  - [x] 실시간 업데이트 (Realtime 구독) ✅ (cleanup 함수 포함)
+  - [x] 로딩 상태 ✅
+  - [x] 에러 처리 ✅
 
 **커서 AI 프롬프트:**
 
