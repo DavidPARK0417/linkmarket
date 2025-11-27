@@ -184,6 +184,7 @@ export async function createWholesaler(
         representative: formData.representative.trim(),
         phone: formattedPhone,
         address: formData.address.trim(),
+        address_detail: formData.address_detail?.trim() || null,
         bank_account: bankAccount,
         status: "pending",
       })

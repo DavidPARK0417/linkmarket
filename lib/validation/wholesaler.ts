@@ -84,6 +84,11 @@ export const wholesalerOnboardingSchema = z.object({
     .min(5, "주소는 5글자 이상 입력해주세요.")
     .max(200, "주소는 200글자 이하로 입력해주세요."),
 
+  address_detail: z
+    .string()
+    .max(100, "상세주소는 100글자 이하로 입력해주세요.")
+    .optional(),
+
   bank_name: z
     .string()
     .min(1, "은행을 선택해주세요.")

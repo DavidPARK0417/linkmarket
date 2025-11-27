@@ -26,6 +26,7 @@
  */
 
 import { redirect } from "next/navigation";
+import Script from "next/script";
 import { getUserProfile } from "@/lib/clerk/auth";
 import { createClerkSupabaseClient } from "@/lib/supabase/server";
 import WholesalerOnboardingForm from "./WholesalerOnboardingForm";
@@ -92,10 +93,17 @@ export default async function WholesalerOnboardingPage() {
   console.log("📝 [wholesaler-onboarding] 신규 사용자, 온보딩 폼 표시");
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        <WholesalerOnboardingForm />
+    <>
+      {/* 카카오 우편번호 서비스 스크립트 로드 */}
+      <Script
+        src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+        strategy="lazyOnload"
+      />
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
+          <WholesalerOnboardingForm />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

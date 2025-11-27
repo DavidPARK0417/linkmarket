@@ -31,7 +31,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, Search } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -72,7 +72,7 @@ import {
 } from "@/lib/validation/wholesaler";
 import { BANKS } from "@/lib/utils/constants";
 import { createWholesaler } from "@/actions/wholesaler/create-wholesaler";
-import { formatPhone } from "@/lib/utils/format";
+import type { DaumPostcodeData } from "@/types/daum";
 
 export default function WholesalerOnboardingForm() {
   const router = useRouter();
@@ -87,6 +87,7 @@ export default function WholesalerOnboardingForm() {
       representative: "",
       phone: "",
       address: "",
+      address_detail: "",
       bank_name: "",
       bank_account_number: "",
     },
@@ -114,6 +115,67 @@ export default function WholesalerOnboardingForm() {
   const handleBusinessNumberChange = (value: string) => {
     const digits = value.replace(/\D/g, "");
     form.setValue("business_number", digits, { shouldValidate: true });
+  };
+
+  // 카카오 주소 검색 함수
+  const handleAddressSearch = () => {
+    // window 객체에 daum이 있는지 확인
+    if (typeof window !== "undefined" && window.daum && window.daum.Postcode) {
+      new window.daum.Postcode({
+        oncomplete: function (data: DaumPostcodeData) {
+          // 주소 타입에 따라 조합
+          let fullAddress = data.address; // 기본 주소
+          let extraAddress = ""; // 참고항목 주소
+
+          // 사용자가 선택한 주소 타입이 도로명 주소인 경우
+          if (data.userSelectedType === "R") {
+            fullAddress = data.roadAddress;
+          } else {
+            // 지번 주소인 경우
+            fullAddress = data.jibunAddress;
+          }
+
+          // 사용자가 선택한 주소가 도로명 타입일 때 참고항목을 조합
+          if (data.userSelectedType === "R") {
+            // 법정동명이 있을 경우 추가
+            if (data.bname !== "") {
+              extraAddress += data.bname;
+            }
+            // 건물명이 있을 경우 추가
+            if (data.buildingName !== "") {
+              extraAddress +=
+                extraAddress !== ""
+                  ? `, ${data.buildingName}`
+                  : data.buildingName;
+            }
+            // 조합된 참고항목을 해당 필드에 넣는다
+            if (extraAddress !== "") {
+              fullAddress += ` (${extraAddress})`;
+            }
+          }
+
+          // 주소 필드에 값 설정
+          form.setValue("address", fullAddress, { shouldValidate: true });
+
+          console.log("✅ [주소 검색] 주소 선택 완료:", fullAddress);
+        },
+        onclose: function (state: "COMPLETE_CLOSE" | "FORCE_CLOSE") {
+          // 사용자가 검색 결과를 선택하지 않고 창을 닫은 경우
+          if (state === "FORCE_CLOSE") {
+            console.log("ℹ️ [주소 검색] 사용자가 주소 검색을 취소했습니다.");
+          }
+        },
+        width: "100%",
+        height: "100%",
+      }).open();
+    } else {
+      console.error(
+        "❌ [주소 검색] 카카오 우편번호 스크립트가 로드되지 않았습니다.",
+      );
+      toast.error(
+        "주소 검색 기능을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      );
+    }
   };
 
   // 폼 제출 핸들러
@@ -297,15 +359,52 @@ export default function WholesalerOnboardingForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>주소 *</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          placeholder="주소 검색 버튼을 클릭해주세요"
+                          {...field}
+                          readOnly
+                          disabled={isSubmitting}
+                          className="flex-1"
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAddressSearch}
+                        disabled={isSubmitting}
+                        className="shrink-0"
+                      >
+                        <Search className="mr-2 size-4" />
+                        주소 검색
+                      </Button>
+                    </div>
+                    <FormDescription>
+                      주소 검색 버튼을 클릭하여 사업장 주소를 검색해주세요.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* 상세주소 */}
+              <FormField
+                control={form.control}
+                name="address_detail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>상세주소</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="예: 서울시 강남구 테헤란로 123"
+                      <Input
+                        placeholder="예: 101호, 2층 (선택사항)"
                         {...field}
-                        rows={3}
                         disabled={isSubmitting}
                       />
                     </FormControl>
-                    <FormDescription>사업장 주소를 입력해주세요.</FormDescription>
+                    <FormDescription>
+                      상세주소를 입력해주세요 (선택사항)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
