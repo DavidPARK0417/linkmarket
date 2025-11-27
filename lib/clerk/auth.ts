@@ -272,9 +272,9 @@ export async function requireAdmin(): Promise<ProfileWithDetails> {
  *
  * 소매점 페이지에서 사용합니다.
  * 인증되지 않은 경우 `/sign-in`으로 리다이렉트합니다.
- * 소매점이 아닌 경우 홈(`/`)으로 리다이렉트합니다.
+ * 소매점 또는 관리자가 아닌 경우 홈(`/`)으로 리다이렉트합니다.
  *
- * @returns {Promise<ProfileWithDetails>} 소매점 프로필 정보 (항상 반환됨, 권한 실패 시 리다이렉트)
+ * @returns {Promise<ProfileWithDetails>} 소매점 또는 관리자 프로필 정보 (항상 반환됨, 권한 실패 시 리다이렉트)
  *
  * @throws {never} 권한 실패 시 리다이렉트하므로 예외를 던지지 않음
  *
@@ -282,7 +282,7 @@ export async function requireAdmin(): Promise<ProfileWithDetails> {
  * ```tsx
  * export default async function RetailerPage() {
  *   const profile = await requireRetailer();
- *   // 여기서는 항상 소매점 권한이 있는 사용자
+ *   // 여기서는 항상 소매점 또는 관리자 권한이 있는 사용자
  *   return <div>소매점 페이지</div>;
  * }
  * ```
@@ -291,13 +291,55 @@ export async function requireRetailer(): Promise<ProfileWithDetails> {
   // 먼저 인증 확인
   const profile = await requireAuth();
 
-  // 소매점 권한 확인
-  if (profile.role !== "retailer") {
-    console.log("🚫 [auth] requireRetailer: 소매점 권한 없음, 홈으로 리다이렉트");
+  // 소매점 또는 관리자 권한 확인
+  if (profile.role !== "retailer" && profile.role !== "admin") {
+    console.log(
+      "🚫 [auth] requireRetailer: 소매점 또는 관리자 권한 없음, 홈으로 리다이렉트",
+    );
     redirect("/");
   }
 
-  console.log("✅ [auth] requireRetailer: 소매점 권한 확인됨");
+  console.log(
+    `✅ [auth] requireRetailer: 권한 확인됨 (role: ${profile.role})`,
+  );
+  return profile;
+}
+
+/**
+ * 도매점 권한 필수 검증
+ *
+ * 도매점 페이지에서 사용합니다.
+ * 인증되지 않은 경우 `/sign-in`으로 리다이렉트합니다.
+ * 도매점 또는 관리자가 아닌 경우 홈(`/`)으로 리다이렉트합니다.
+ *
+ * @returns {Promise<ProfileWithDetails>} 도매점 또는 관리자 프로필 정보 (항상 반환됨, 권한 실패 시 리다이렉트)
+ *
+ * @throws {never} 권한 실패 시 리다이렉트하므로 예외를 던지지 않음
+ *
+ * @example
+ * ```tsx
+ * export default async function WholesalerPage() {
+ *   const profile = await requireWholesaler();
+ *   // 여기서는 항상 도매점 또는 관리자 권한이 있는 사용자
+ *   return <div>도매점 페이지</div>;
+ * }
+ * ```
+ */
+export async function requireWholesaler(): Promise<ProfileWithDetails> {
+  // 먼저 인증 확인
+  const profile = await requireAuth();
+
+  // 도매점 또는 관리자 권한 확인
+  if (profile.role !== "wholesaler" && profile.role !== "admin") {
+    console.log(
+      "🚫 [auth] requireWholesaler: 도매점 또는 관리자 권한 없음, 홈으로 리다이렉트",
+    );
+    redirect("/");
+  }
+
+  console.log(
+    `✅ [auth] requireWholesaler: 권한 확인됨 (role: ${profile.role})`,
+  );
   return profile;
 }
 

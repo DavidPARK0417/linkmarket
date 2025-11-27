@@ -25,8 +25,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Home, Search, ShoppingCart, ClipboardList } from "lucide-react";
+import { Home, Search, ShoppingCart, ClipboardList, Shield } from "lucide-react";
 import { CommandPalette } from "./command-palette";
+import type { UserRole } from "@/types/database";
 
 // 네비게이션 링크 정의
 const navLinks = [
@@ -52,7 +53,11 @@ const navLinks = [
   },
 ];
 
-export default function RetailerHeader() {
+interface RetailerHeaderProps {
+  role?: UserRole;
+}
+
+export default function RetailerHeader({ role }: RetailerHeaderProps) {
   const pathname = usePathname();
 
   // 현재 경로가 네비게이션 링크와 일치하는지 확인
@@ -69,16 +74,26 @@ export default function RetailerHeader() {
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* 로고 */}
-            <Link href="/retailer/dashboard" className="flex items-center">
-              <Image
-                src="/farmtobiz_logo.png"
-                alt="FarmToBiz"
-                width={180}
-                height={69}
-                className="object-contain"
-              />
-            </Link>
+            {/* 로고 + 관리자 배지 */}
+            <div className="flex items-center gap-3">
+              <Link href="/retailer/dashboard" className="flex items-center">
+                <Image
+                  src="/farmtobiz_logo.png"
+                  alt="FarmToBiz"
+                  width={180}
+                  height={69}
+                  className="object-contain"
+                />
+              </Link>
+              {/* 관리자 배지 */}
+              {role === "admin" && (
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-red-500 text-white rounded-full text-xs font-semibold">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">관리자 모드</span>
+                  <span className="sm:hidden">관리자</span>
+                </div>
+              )}
+            </div>
 
           {/* 네비게이션 링크 + 사용자 메뉴 - 데스크톱 */}
           <div className="hidden md:flex items-center gap-4">

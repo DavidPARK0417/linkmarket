@@ -24,18 +24,18 @@ export default async function RetailerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 소매점 권한 확인
+  // 소매점 또는 관리자 권한 확인
   const profile = await requireRetailer();
 
-  console.log("✅ [retailer] 레이아웃: 소매점 권한 확인됨", {
+  console.log("✅ [retailer] 레이아웃: 권한 확인됨", {
     email: profile.email,
     role: profile.role,
   });
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* 헤더 */}
-      <RetailerHeader />
+      {/* 헤더 - role 정보 전달 */}
+      <RetailerHeader role={profile.role} />
 
       {/* 메인 컨텐츠 */}
       <main className="flex-1">{children}</main>

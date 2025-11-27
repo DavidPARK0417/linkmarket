@@ -21,8 +21,9 @@
 
 import { UserButton, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
+import { Bell, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
+import type { UserRole } from "@/types/database";
 
 // 경로별 페이지 제목 매핑 (Sidebar의 menuItems와 일관성 유지)
 const pageTitleMap: Record<string, string> = {
@@ -35,7 +36,11 @@ const pageTitleMap: Record<string, string> = {
   "/wholesaler/settings": "설정",
 };
 
-export default function WholesalerHeader() {
+interface WholesalerHeaderProps {
+  role?: UserRole;
+}
+
+export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
   const pathname = usePathname();
   const { isLoaded } = useUser();
   const [mounted, setMounted] = useState(false);
@@ -76,10 +81,17 @@ export default function WholesalerHeader() {
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6">
       {/* 페이지 제목 영역 */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-gray-900 hidden md:block">
           {pageTitle}
         </h2>
+        {/* 관리자 배지 */}
+        {role === "admin" && (
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-red-500 text-white rounded-full text-xs font-semibold">
+            <Shield className="w-3.5 h-3.5" />
+            <span>관리자 모드</span>
+          </div>
+        )}
       </div>
 
       {/* 오른쪽 영역: 알림 + 사용자 메뉴 */}

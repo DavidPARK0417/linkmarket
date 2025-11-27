@@ -23,9 +23,8 @@
  * - components/wholesaler/Layout/Header.tsx
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getUserProfile } from "@/lib/clerk/auth";
+import { requireWholesaler } from "@/lib/clerk/auth";
 import { createClerkSupabaseClient } from "@/lib/supabase/server";
 import WholesalerSidebar from "@/components/wholesaler/Layout/Sidebar";
 import WholesalerHeader from "@/components/wholesaler/Layout/Header";
@@ -37,35 +36,34 @@ export default async function WholesalerLayout({
 }) {
   console.log("🔍 [wholesaler-layout] 레이아웃 접근 시작");
 
-  // 1. Clerk 인증 확인
-  const { userId } = await auth();
+  // 1. 도매점 또는 관리자 권한 확인 (requireWholesaler 사용)
+  const profile = await requireWholesaler();
 
-  if (!userId) {
-    console.log(
-      "⚠️ [wholesaler-layout] 인증되지 않음, 로그인 페이지로 리다이렉트",
+  console.log(
+    `✅ [wholesaler-layout] 권한 확인됨 (role: ${profile.role})`,
+  );
+
+  // 2. 관리자인 경우 wholesaler 정보 체크를 건너뛰고 접근 허용
+  if (profile.role === "admin") {
+    console.log("👑 [wholesaler-layout] 관리자 접근 - wholesaler 체크 건너뜀");
+    return (
+      <div className="min-h-screen bg-gray-50 flex">
+        {/* 사이드바 */}
+        <WholesalerSidebar />
+
+        {/* 메인 컨텐츠 영역 */}
+        <div className="flex-1 flex flex-col">
+          {/* 헤더 - 관리자 role 전달 */}
+          <WholesalerHeader role={profile.role} />
+
+          {/* 메인 컨텐츠 */}
+          <main className="flex-1 p-6">{children}</main>
+        </div>
+      </div>
     );
-    redirect("/sign-in");
   }
 
-  console.log("✅ [wholesaler-layout] Clerk 인증 확인됨:", userId);
-
-  // 2. 프로필 정보 조회 (wholesalers 정보 포함)
-  const profile = await getUserProfile();
-
-  if (!profile) {
-    console.log(
-      "⚠️ [wholesaler-layout] 프로필 없음, 로그인 페이지로 리다이렉트",
-    );
-    redirect("/sign-in");
-  }
-
-  // 3. 도매점 역할 확인
-  if (profile.role !== "wholesaler") {
-    console.log("⚠️ [wholesaler-layout] 도매점 역할 아님, 홈으로 리다이렉트");
-    redirect("/");
-  }
-
-  // 4. Supabase에서 wholesalers 정보 조회
+  // 3. 도매점인 경우 wholesaler 정보 조회 및 상태 확인
   const supabase = createClerkSupabaseClient();
 
   // profile_id로 도매점 정보 조회
@@ -81,7 +79,7 @@ export default async function WholesalerLayout({
     redirect("/wholesaler-onboarding");
   }
 
-  // 5. wholesaler 정보가 없으면 온보딩으로 리다이렉트
+  // 4. wholesaler 정보가 없으면 온보딩으로 리다이렉트
   if (!wholesaler) {
     console.log(
       "ℹ️ [wholesaler-layout] 도매점 정보 없음, 온보딩 페이지로 리다이렉트",
@@ -91,7 +89,7 @@ export default async function WholesalerLayout({
 
   console.log("📊 [wholesaler-layout] 도매점 상태:", wholesaler.status);
 
-  // 6. status = 'pending' 또는 'rejected'이면 승인 대기 페이지로 리다이렉트
+  // 5. status = 'pending' 또는 'rejected'이면 승인 대기 페이지로 리다이렉트
   if (wholesaler.status === "pending" || wholesaler.status === "rejected") {
     console.log(
       "⏳ [wholesaler-layout] 승인 대기/반려 상태, 승인 대기 페이지로 리다이렉트",
@@ -99,7 +97,7 @@ export default async function WholesalerLayout({
     redirect("/pending-approval");
   }
 
-  // 7. status = 'suspended'이면 정지 페이지로 리다이렉트
+  // 6. status = 'suspended'이면 정지 페이지로 리다이렉트
   if (wholesaler.status === "suspended") {
     console.log(
       "🚫 [wholesaler-layout] 계정 정지 상태, 정지 페이지로 리다이렉트",
@@ -107,7 +105,7 @@ export default async function WholesalerLayout({
     redirect("/wholesaler/suspended");
   }
 
-  // 8. status = 'approved'인 경우에만 대시보드 접근 허용
+  // 7. status = 'approved'인 경우에만 대시보드 접근 허용
   if (wholesaler.status !== "approved") {
     console.log("⚠️ [wholesaler-layout] 승인되지 않은 상태, 홈으로 리다이렉트");
     redirect("/");
@@ -122,8 +120,8 @@ export default async function WholesalerLayout({
 
       {/* 메인 컨텐츠 영역 */}
       <div className="flex-1 flex flex-col">
-        {/* 헤더 */}
-        <WholesalerHeader />
+        {/* 헤더 - role 정보 전달 */}
+        <WholesalerHeader role={profile.role} />
 
         {/* 메인 컨텐츠 */}
         <main className="flex-1 p-6">{children}</main>
