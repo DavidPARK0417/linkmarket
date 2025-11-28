@@ -10,7 +10,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { getMarketPrices, getPriceTrend, MarketPriceParams } from "@/lib/api/market-prices";
+import { getMarketPrices, MarketPriceParams } from "@/lib/api/market-prices";
 
 /**
  * GET /api/market-prices

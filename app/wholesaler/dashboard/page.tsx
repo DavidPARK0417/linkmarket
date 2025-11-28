@@ -27,7 +27,6 @@ import { toast } from "sonner";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { subscribeToNewOrders } from "@/lib/supabase/realtime";
 import { useWholesaler } from "@/hooks/useWholesaler";
-import PageHeader from "@/components/common/PageHeader";
 import StatCard from "@/components/wholesaler/Dashboard/StatCard";
 import RecentOrders from "@/components/wholesaler/Dashboard/RecentOrders";
 import RecentOrdersSkeleton from "@/components/wholesaler/Dashboard/RecentOrdersSkeleton";

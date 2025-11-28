@@ -216,7 +216,7 @@ export default function InquiryDetailPage({
           <CardHeader>
             <CardTitle>답변 작성</CardTitle>
             <CardDescription>
-              문의에 대한 답변을 작성해주세요. 답변 작성 후 상태가 "답변완료"로
+              문의에 대한 답변을 작성해주세요. 답변 작성 후 상태가 &quot;답변완료&quot;로
               변경됩니다.
             </CardDescription>
           </CardHeader>

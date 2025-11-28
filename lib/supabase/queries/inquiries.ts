@@ -19,7 +19,7 @@ import type {
   InquiryFilter,
   ReplyInquiryRequest,
 } from "@/types/inquiry";
-import type { InquiryStatus, InquiryType } from "@/types/database";
+import type { InquiryStatus } from "@/types/database";
 
 /**
  * 문의 목록 조회 옵션

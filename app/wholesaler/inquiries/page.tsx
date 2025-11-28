@@ -21,7 +21,7 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import PageHeader from "@/components/common/PageHeader";
@@ -64,8 +64,6 @@ async function fetchInquiries(filter: InquiryFilterType = {}) {
 }
 
 export default function InquiriesPage() {
-  const queryClient = useQueryClient();
-
   // 필터 상태
   const [activeTab, setActiveTab] = React.useState<string>("all");
   const [filter, setFilter] = React.useState<InquiryFilterType>({});
@@ -86,7 +84,7 @@ export default function InquiriesPage() {
   }, [activeTab]);
 
   // 문의 목록 조회
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["inquiries", filter],
     queryFn: () => fetchInquiries(filter),
     staleTime: 30 * 1000, // 30초

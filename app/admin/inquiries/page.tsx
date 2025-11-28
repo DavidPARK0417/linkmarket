@@ -23,7 +23,6 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { requireAdmin } from "@/lib/clerk/auth";
 
 import PageHeader from "@/components/common/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
