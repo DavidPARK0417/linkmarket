@@ -57,7 +57,7 @@ export default async function WholesalerLayout({
           <WholesalerHeader role={profile.role} />
 
           {/* 메인 컨텐츠 */}
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-6 bg-gray-50">{children}</main>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default async function WholesalerLayout({
         <WholesalerHeader role={profile.role} />
 
         {/* 메인 컨텐츠 */}
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6 bg-gray-50">{children}</main>
       </div>
     </div>
   );
