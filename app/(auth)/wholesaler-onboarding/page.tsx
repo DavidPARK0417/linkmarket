@@ -50,9 +50,14 @@ export default async function WholesalerOnboardingPage() {
     // role은 createWholesaler 액션에서 설정됨
   } else if (profile.role !== "wholesaler") {
     console.log(
-      "⚠️ [wholesaler-onboarding] 도매점 역할 아님 (이미 다른 역할 설정됨), 메인페이지로 리다이렉트",
+      "⚠️ [wholesaler-onboarding] 도매점 역할 아님 (이미 다른 역할 설정됨), 로그인 페이지로 리다이렉트",
     );
-    redirect("/");
+    // 소매점 계정인 경우 로그인 페이지로 리다이렉트 (무한 루프 방지)
+    if (profile.role === "retailer") {
+      redirect("/sign-in/wholesaler?error=retailer");
+    } else {
+      redirect("/");
+    }
   }
 
   // 이미 등록된 도매점 정보 확인

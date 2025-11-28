@@ -53,46 +53,50 @@ export default async function WholesalerSignInPage({
           </CardHeader>
         </Card>
 
-        {/* 로그인 폼 */}
-        <div className="flex justify-center">
-          <SignInWithRedirect
-            appearance={{
-              elements: {
-                rootBox: "mx-auto",
-                card: "shadow-lg",
-              },
-            }}
-            path="/sign-in/wholesaler"
-            signUpUrl="/sign-up?type=wholesaler"
-            fallbackRedirectUrl="/wholesaler-onboarding"
-            forceRedirectUrl="/wholesaler-onboarding"
-            redirectToSignUpUrl="/sign-up?type=wholesaler"
-            onboardingUrl="/wholesaler-onboarding"
-          />
-        </div>
-
-        {/* 신규 회원 안내 카드 */}
-        <Card className="border-blue-200 bg-blue-50/50">
-          <CardHeader className="text-center py-3">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <UserPlus className="w-4 h-4 text-blue-600" />
-              <CardTitle className="text-base">
-                아직 회원이 아니신가요?
-              </CardTitle>
+        {/* 로그인 폼 - error=retailer일 때는 SignIn 컴포넌트를 렌더링하지 않음 (무한 루프 방지) */}
+        {!showRetailerBlockModal && (
+          <>
+            <div className="flex justify-center">
+              <SignInWithRedirect
+                appearance={{
+                  elements: {
+                    rootBox: "mx-auto",
+                    card: "shadow-lg",
+                  },
+                }}
+                path="/sign-in/wholesaler"
+                signUpUrl="/sign-up?type=wholesaler"
+                fallbackRedirectUrl="/wholesaler-onboarding"
+                forceRedirectUrl="/wholesaler-onboarding"
+                redirectToSignUpUrl="/sign-up?type=wholesaler"
+                onboardingUrl="/wholesaler-onboarding"
+              />
             </div>
-            <CardDescription className="text-blue-900/70 mb-2 text-sm">
-              지금 바로 회원가입하고 도매 비즈니스를 시작하세요!
-            </CardDescription>
-            <Link href="/sign-up?type=wholesaler">
-              <Button
-                variant="default"
-                className="w-full bg-blue-600 hover:bg-blue-700"
-              >
-                회원가입하기
-              </Button>
-            </Link>
-          </CardHeader>
-        </Card>
+
+            {/* 신규 회원 안내 카드 */}
+            <Card className="border-blue-200 bg-blue-50/50">
+              <CardHeader className="text-center py-3">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <UserPlus className="w-4 h-4 text-blue-600" />
+                  <CardTitle className="text-base">
+                    아직 회원이 아니신가요?
+                  </CardTitle>
+                </div>
+                <CardDescription className="text-blue-900/70 mb-2 text-sm">
+                  지금 바로 회원가입하고 도매 비즈니스를 시작하세요!
+                </CardDescription>
+                <Link href="/sign-up?type=wholesaler">
+                  <Button
+                    variant="default"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    회원가입하기
+                  </Button>
+                </Link>
+              </CardHeader>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* 소매점 계정 차단 모달 */}
