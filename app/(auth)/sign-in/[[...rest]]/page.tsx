@@ -12,23 +12,55 @@
  * 3. Catch-all route로 Clerk 내부 라우팅 지원
  * 4. URL 파라미터를 확인하여 도매업자 관련이면 적절한 설정 적용
  * 5. 가입되지 않은 계정 에러 감지 및 모달 표시
+ * 6. 소매점 계정의 도매점 회원가입 시도 차단
  *
  * @dependencies
  * - @clerk/nextjs (SignIn)
  * - components/auth/sign-in-with-redirect
+ * - components/auth/retailer-signup-block-modal
  *
  * @see {@link https://clerk.com/docs/components/sign-in/sign-in} - Clerk SignIn 문서
  */
 
 import SignInWithRedirect from "@/components/auth/sign-in-with-redirect";
+import SignInCreateClient from "./SignInCreateClient";
 
 interface SignInPageProps {
   searchParams: Promise<{ redirect_url?: string }>;
+  params: Promise<{ rest?: string[] }>;
 }
 
-export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const params = await searchParams;
-  const redirectUrl = params.redirect_url || "";
+export default async function SignInPage({ 
+  searchParams,
+  params 
+}: SignInPageProps) {
+  const searchParamsResolved = await searchParams;
+  const paramsResolved = await params;
+  const redirectUrl = searchParamsResolved.redirect_url || "";
+  
+  // /sign-in/create 경로인지 확인 (Clerk 내부 라우팅)
+  const isCreatePath = paramsResolved.rest?.includes("create") || false;
+  
+  // redirect_url에 wholesaler-onboarding이 포함되어 있고, /sign-in/create 경로이면
+  // 소매점 계정의 도매점 회원가입 시도로 판단
+  const isRetailerSignupAttempt = isCreatePath && 
+                                   redirectUrl.includes("wholesaler-onboarding");
+
+  console.log("🔍 [sign-in] 경로 확인:", {
+    isCreatePath,
+    redirectUrl,
+    isRetailerSignupAttempt,
+  });
+
+  // 소매점 계정의 도매점 회원가입 시도 차단
+  if (isRetailerSignupAttempt) {
+    console.log("🚫 [sign-in] 소매점 계정의 도매점 회원가입 시도 감지 - 모달 표시");
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4">
+        <SignInCreateClient />
+      </div>
+    );
+  }
 
   // URL 파라미터를 확인하여 도매업자 관련인지 판단
   const isWholesalerFlow = redirectUrl.includes("/wholesaler") || 
