@@ -33,6 +33,12 @@ export interface Wholesaler {
   rejection_reason: string | null;
   created_at: string;
   approved_at: string | null;
+  // 입점 셀러 등록 관련 필드 (Phase 2 구현 예정)
+  seller_terms_agreed_at: string | null; // 입점 셀러 약관 동의 시각
+  toss_merchant_id: string | null; // 토스 Payments 가맹점 ID
+  contract_file_url: string | null; // 입점 계약서 파일 URL
+  contract_uploaded_at: string | null; // 계약서 업로드 시각
+  seller_registered_at: string | null; // 입점 셀러 등록 완료 시각
 }
 
 /**

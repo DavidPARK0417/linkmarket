@@ -2073,7 +2073,7 @@ Anonymous Code 자동 생성 로직을 구현해줘.
   - [ ] 승인일 (읽기 전용)
   - [ ] 가입일 (읽기 전용)
 
-#### 5. 알림 설정 (선택 기능)
+#### 5. 알림 설정 
 
 - [ ] **알림 설정 기능**
   - [ ] 새 주문 알림 (이메일, 푸시)
@@ -2398,6 +2398,149 @@ Anonymous Code 자동 생성 로직을 구현해줘.
    - RLS 정책은 쿼리 성능에 영향을 줄 수 있음
    - 필요한 인덱스가 있는지 확인
    - 정책 조건이 복잡한 경우 성능 모니터링 필요
+
+---
+
+## 🚀 Phase 2: 입점 셀러 등록 기능 (Week 8 이후 또는 실제 서비스 전)
+
+### 📋 개요
+
+도매자를 "입점 셀러"로 등록하여 법적 책임을 명확히 하고, 토스 Payments 정산 기능을 사용할 수 있도록 합니다.
+
+**왜 필요한가?**
+
+1. **법적 보호**: 전자상거래법상 판매자 정보가 명확히 등록되지 않으면 플랫폼이 판매자로 간주되어 모든 법적 책임이 플랫폼에 전가됨
+2. **토스 Payments 정산**: 정산 기능 사용을 위해 가맹점(판매자) 정보가 필요
+3. **세금계산서 발행**: 도매자가 셀러로 등록되어야 구매자와 도매자 간의 거래 구조가 성립
+4. **분쟁 발생 시 책임 소재 명확화**: "입점 판매자 → 소비자" 구조가 아니라면 소비자가 문제 발생 시 무조건 플랫폼을 상대로 소송
+
+### 📝 구현 항목
+
+#### 1. DB 필드 추가 (✅ 완료)
+
+- [x] `seller_terms_agreed_at` - 입점 셀러 약관 동의 시각
+- [x] `toss_merchant_id` - 토스 Payments 가맹점 ID
+- [x] `contract_file_url` - 입점 계약서 파일 URL
+- [x] `contract_uploaded_at` - 계약서 업로드 시각
+- [x] `seller_registered_at` - 입점 셀러 등록 완료 시각
+
+**마이그레이션 파일**: `supabase/migrations/20251128143548_add_seller_registration_fields.sql`
+
+#### 2. Storage 버킷 설정
+
+- [ ] `contracts` 버킷 생성 (또는 기존 `uploads` 버킷 활용)
+- [ ] RLS 정책 설정 (도매자만 자신의 계약서 업로드/조회 가능)
+- [ ] 파일 형식 제한 (PDF 우선, 이미지도 허용)
+- [ ] 파일 크기 제한 (최대 10MB)
+
+#### 3. 온보딩 폼에 계약서 업로드 추가
+
+- [ ] 파일 업로드 UI 컴포넌트 추가
+- [ ] 파일 형식 검증 (PDF, JPG, PNG)
+- [ ] 파일 크기 검증 (최대 10MB)
+- [ ] 업로드 진행 상태 표시
+- [ ] 업로드된 파일 미리보기
+- [ ] 파일 삭제 기능
+
+**파일**: `app/(auth)/wholesaler-onboarding/WholesalerOnboardingForm.tsx`
+
+#### 4. 약관 동의 기능
+
+- [ ] 입점 셀러 약관 텍스트 작성
+- [ ] 약관 동의 체크박스 추가
+- [ ] 동의 시 `seller_terms_agreed_at` 기록
+- [ ] 약관 미동의 시 상품 등록/판매 불가 처리
+
+**파일**: `app/(auth)/wholesaler-onboarding/WholesalerOnboardingForm.tsx`
+
+#### 5. Server Action 수정
+
+- [ ] `createWholesaler` 함수에 계약서 업로드 처리 추가
+- [ ] Supabase Storage에 파일 업로드
+- [ ] `contract_file_url`, `contract_uploaded_at` 저장
+- [ ] 에러 처리 및 롤백 로직
+
+**파일**: `actions/wholesaler/create-wholesaler.ts`
+
+#### 6. 관리자 승인 페이지 개선
+
+- [ ] 계약서 다운로드 버튼 추가
+- [ ] 계약서 미리보기 기능 (PDF 뷰어)
+- [ ] 계약서 확인 체크박스
+- [ ] 계약서 미업로드 시 승인 불가 처리
+
+**파일**: `app/admin/wholesalers/[id]/page.tsx`
+
+#### 7. 토스 Payments 가맹점 등록 연동
+
+- [ ] 토스 Payments API 연동
+- [ ] 가맹점 등록 프로세스 구현
+- [ ] `toss_merchant_id` 저장
+- [ ] 등록 실패 시 재시도 로직
+
+**파일**: `actions/wholesaler/register-toss-merchant.ts`
+
+#### 8. 입점 셀러 등록 완료 처리
+
+- [ ] 모든 필수 단계 완료 시 `seller_registered_at` 설정
+- [ ] 등록 완료 알림 표시
+- [ ] 상품 등록/판매 가능 상태로 전환
+
+**파일**: `actions/wholesaler/complete-seller-registration.ts`
+
+#### 9. 유효성 검증
+
+- [ ] 계약서 파일 존재 여부 확인
+- [ ] 파일 형식 검증
+- [ ] 파일 크기 검증
+- [ ] 약관 동의 여부 확인
+- [ ] 토스 가맹점 등록 여부 확인 (정산 기능 사용 시)
+
+**파일**: `lib/validation/wholesaler.ts`
+
+### 📋 등록 흐름
+
+```
+1. 도매자 가입
+   ↓
+2. 관리자 승인 (status='approved', approved_at 설정)
+   ↓
+3. 입점 셀러 약관 동의 (seller_terms_agreed_at 설정)
+   ↓
+4. 입점 계약서 업로드 (contract_file_url, contract_uploaded_at 설정)
+   ↓
+5. 토스 Payments 가맹점 등록 (toss_merchant_id 설정)
+   ↓
+6. 입점 셀러 등록 완료 (seller_registered_at 설정)
+   ↓
+7. 상품 등록 및 판매 시작 가능
+```
+
+### ⚠️ 주의사항
+
+1. **약관 동의는 필수**
+
+   - `seller_terms_agreed_at`이 없으면 상품 등록/판매 불가
+
+2. **토스 가맹점 등록은 선택**
+
+   - 정산 기능 사용 시에만 필요
+   - `toss_merchant_id`가 없으면 정산만 불가, 판매는 가능
+
+3. **등록 완료 조건**
+
+   - `seller_terms_agreed_at`이 있으면 입점 셀러로 간주
+   - `seller_registered_at`은 모든 필수 단계 완료 시 자동 설정
+
+4. **법적 요구사항**
+   - 약관에 "입점 셀러"로 명시 필수
+   - 실제 서비스 전에 반드시 구현 필요
+
+### 📚 참고 자료
+
+- [전자상거래법](https://www.law.go.kr/)
+- [토스 Payments 가맹점 등록 가이드](https://docs.tosspayments.com/)
+- [Supabase Storage 문서](https://supabase.com/docs/guides/storage)
 
 ---
 

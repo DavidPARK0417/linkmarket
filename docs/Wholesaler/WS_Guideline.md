@@ -497,7 +497,13 @@ CREATE TABLE wholesalers (
   status TEXT DEFAULT 'pending',          -- pending/approved/rejected/suspended
   rejection_reason TEXT,                  -- 반려 사유 (status가 rejected일 때)
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  approved_at TIMESTAMPTZ
+  approved_at TIMESTAMPTZ,
+  -- 입점 셀러 등록 관련 필드 (Phase 2 구현 예정)
+  seller_terms_agreed_at TIMESTAMPTZ,     -- 입점 셀러 약관 동의 시각
+  toss_merchant_id TEXT,                  -- 토스 Payments 가맹점 ID
+  contract_file_url TEXT,                 -- 입점 계약서 파일 URL
+  contract_uploaded_at TIMESTAMPTZ,       -- 계약서 업로드 시각
+  seller_registered_at TIMESTAMPTZ       -- 입점 셀러 등록 완료 시각
 );
 ```
 
@@ -516,8 +522,16 @@ CREATE TABLE wholesalers (
 - `rejection_reason`: 관리자가 승인을 반려한 경우 사유 입력
 - `anonymous_code`: 소매 페이지에 표시될 익명 코드 (예: "VENDOR-001", 서버에서 자동 생성)
 - `approved_at`: 승인 완료 시간
+- **입점 셀러 등록 관련 필드 (Phase 2 구현 예정)**:
+  - `seller_terms_agreed_at`: 입점 셀러 약관 동의 시각 (법적 요구사항)
+  - `toss_merchant_id`: 토스 Payments 가맹점 ID (정산 기능 사용 시 필수)
+  - `contract_file_url`: 입점 계약서 파일 URL (Supabase Storage 경로)
+  - `contract_uploaded_at`: 계약서 업로드 시각
+  - `seller_registered_at`: 입점 셀러 등록 완료 시각 (모든 필수 단계 완료 시 설정)
 
 ⚠️ **중요**: 이메일은 profiles 테이블의 email 필드를 사용합니다.
+
+⚠️ **입점 셀러 등록**: Phase 2에서 구현 예정 (Week 8 이후 또는 실제 서비스 전)
 
 #### 📦 `products` - 상품
 
@@ -651,6 +665,73 @@ scheduledPayoutAt.setDate(scheduledPayoutAt.getDate() + 7); // D+7
 - 정산 예정일: 주문일 + 7일
 
 ⚠️ **MVP 범위**: 정산 계산 및 조회만. 자동 송금은 Phase 2
+
+### 5.1.1 입점 셀러 등록 (Phase 2)
+
+**목적**: 도매자를 "입점 셀러"로 등록하여 법적 책임을 명확히 하고, 토스 Payments 정산 기능을 사용할 수 있도록 합니다.
+
+**법적 요구사항:**
+
+1. **전자상거래법 준수**
+   - 판매자 정보가 명확히 등록되지 않으면 플랫폼이 판매자로 간주됨
+   - 모든 법적 책임(환불, 민원, 배상)이 플랫폼에 전가됨
+   - 도매자를 "입점 셀러"로 명시하여 책임 소재 명확화
+
+2. **약관에 명시**
+   - 약관에 "입점 셀러"로 명시하여 법적 보호 강화
+   - "본 플랫폼은 중개 서비스를 제공하며, 실제 판매자는 입점 셀러(도매자)입니다"
+
+**기능 요구사항:**
+
+1. **토스 Payments 정산**
+   - 토스 Payments 정산을 사용하려면 "가맹점(판매자) 정보"가 필요
+   - 예금주, 계좌, 신원 인증이 필요한 이유
+
+2. **세금계산서 발행**
+   - 도매자가 셀러로 등록되어야 구매자와 도매자 간의 거래 구조가 성립
+   - 세금계산서 발행 책임이 도매자에게 있음
+
+3. **분쟁 발생 시 책임 소재 명확화**
+   - "입점 판매자 → 소비자" 구조가 아니라면 소비자가 문제 발생 시 무조건 플랫폼을 상대로 소송
+
+**등록 흐름:**
+
+```
+1. 도매자 가입
+   ↓
+2. 관리자 승인 (status='approved', approved_at 설정)
+   ↓
+3. 입점 셀러 약관 동의 (seller_terms_agreed_at 설정)
+   ↓
+4. 입점 계약서 업로드 (contract_file_url, contract_uploaded_at 설정)
+   ↓
+5. 토스 Payments 가맹점 등록 (toss_merchant_id 설정)
+   ↓
+6. 입점 셀러 등록 완료 (seller_registered_at 설정)
+   ↓
+7. 상품 등록 및 판매 시작 가능
+```
+
+**구현 시점:**
+
+- **Phase 2** (Week 8 이후 또는 실제 서비스 전)
+- MVP 단계에서는 핵심 기능(상품 등록, 주문, 결제)에 집중
+- 실제 서비스 전에 반드시 구현 필요
+
+**구현 항목:**
+
+- [ ] Storage 버킷 설정 (contracts 버킷 또는 기존 버킷 활용)
+- [ ] 온보딩 폼에 파일 업로드 UI 추가
+- [ ] 유효성 검증 스키마 업데이트
+- [ ] Server Action 수정 (파일 업로드 처리)
+- [ ] 관리자 승인 페이지에 계약서 확인 기능 추가
+- [ ] 약관 동의 체크박스 및 동의 기록
+- [ ] 토스 Payments 가맹점 등록 연동
+
+**참고:**
+
+- DB 필드는 이미 추가됨 (`20251128143548_add_seller_registration_fields.sql`)
+- 나중에 UI와 로직만 추가하면 됨
 
 ### 5.2 RLS (Row Level Security) 정책
 
