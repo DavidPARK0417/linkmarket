@@ -74,14 +74,6 @@ export default function SettlementDetailDialog({
                       : "-"}
                   </p>
                 </div>
-                {order?.paid_at && (
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">결제일</p>
-                    <p className="font-medium">
-                      {formatDate(order.paid_at, "ko")}
-                    </p>
-                  </div>
-                )}
               </div>
 
               <div className="border-t my-4" />

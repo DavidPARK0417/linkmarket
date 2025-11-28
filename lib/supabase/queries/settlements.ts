@@ -44,7 +44,6 @@ export interface SettlementWithOrder extends Settlement {
     unit_price: number;
     shipping_fee: number;
     total_amount: number;
-    paid_at: string | null;
     products: {
       name: string;
       category: string;
@@ -123,6 +122,7 @@ export async function getSettlements(
   // ⚠️ RLS 비활성화 환경 대응: 명시적으로 wholesaler_id 필터 추가
   // settlements.order_id → orders.id 외래키 관계
   // orders.product_id → products.id, orders.variant_id → product_variants.id
+  // ⚠️ paid_at은 orders 테이블에 없고 payments 테이블에 있으므로 제외
   let query = supabase
     .from("settlements")
     .select(
@@ -135,7 +135,6 @@ export async function getSettlements(
         unit_price,
         shipping_fee,
         total_amount,
-        paid_at,
         products(name, category),
         product_variants(name)
       )

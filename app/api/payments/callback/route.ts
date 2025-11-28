@@ -88,22 +88,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이미 결제 완료된 주문인지 확인
-    if (order.paid_at) {
-      console.log("⚠️ [payment-callback] 이미 결제 완료된 주문");
-      console.groupEnd();
-      return NextResponse.json(
-        { message: "Already processed" },
-        { status: 200 },
-      );
-    }
-
-    // 2. 주문 상태 업데이트 (paid_at 설정)
+    // 2. 주문 상태 업데이트
+    // ⚠️ paid_at은 orders 테이블에 없고 payments 테이블에 있으므로 여기서는 상태만 업데이트
     console.log("📝 [payment-callback] 주문 상태 업데이트");
     const { error: updateError } = await supabase
       .from("orders")
       .update({
-        paid_at: approvedAt,
         status: "pending", // 결제 완료 후 주문 대기 상태
       })
       .eq("id", orderId);
