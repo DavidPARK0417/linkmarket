@@ -23,6 +23,7 @@ export interface Wholesaler {
   representative: string; // 대표자명
   phone: string;
   address: string;
+  address_detail: string | null; // 상세주소 (예: 101호, 2층 등)
   bank_account: string; // 은행명 포함하여 저장
   anonymous_code: string; // VENDOR-001 형식 (소매에게 노출되는 익명 코드)
   anonymous_id: string | null; // Partner #F2B-01 형식의 익명 식별자
@@ -33,6 +34,7 @@ export interface Wholesaler {
   rejection_reason: string | null;
   created_at: string;
   approved_at: string | null;
+  notification_preferences: NotificationPreferences | null; // 알림 설정
   // 입점 셀러 등록 관련 필드 (Phase 2 구현 예정)
   seller_terms_agreed_at: string | null; // 입점 셀러 약관 동의 시각
   toss_merchant_id: string | null; // 토스 Payments 가맹점 ID
@@ -55,13 +57,33 @@ export interface CreateWholesalerRequest {
 }
 
 /**
+ * 알림 설정 타입
+ */
+export interface NotificationPreferences {
+  new_order: {
+    email: boolean;
+    push: boolean;
+  };
+  settlement_completed: {
+    email: boolean;
+    push: boolean;
+  };
+  inquiry_answered: {
+    email: boolean;
+    push: boolean;
+  };
+}
+
+/**
  * 도매점 업데이트 요청 타입
  */
 export interface UpdateWholesalerRequest {
   business_name?: string;
   phone?: string;
   address?: string;
-  bank_account?: string;
+  address_detail?: string;
+  bank_name?: string; // 계좌번호 수정 시 은행명
+  bank_account_number?: string; // 계좌번호 수정 시 계좌번호
   is_dawn_delivery_available?: boolean;
   delivery_time_slots?: string[];
 }
