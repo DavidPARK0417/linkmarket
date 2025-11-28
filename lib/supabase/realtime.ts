@@ -238,12 +238,10 @@ export function subscribeToWholesalerStatus(
  *
  * 특정 도매점에 대한 새 문의가 생성될 때 실시간으로 알림을 받습니다.
  * inquiries 테이블의 INSERT 이벤트를 구독합니다.
- *
- * ⚠️ 주의: inquiries 테이블에 wholesaler_id가 직접 없을 수 있으므로,
- * 실제 구현 시 문의와 도매점의 관계를 확인해야 합니다.
+ * inquiry_type이 'retailer_to_wholesaler'이고 wholesaler_id가 일치하는 문의만 필터링합니다.
  *
  * @param {SupabaseClient} supabase - Supabase 클라이언트 인스턴스
- * @param {string} wholesalerId - 도매점 ID (필요시 사용)
+ * @param {string} wholesalerId - 도매점 ID
  * @param {(inquiry: Inquiry) => void} onNewInquiry - 새 문의가 생성될 때 호출되는 콜백 함수
  * @returns {() => void} 구독 해제 함수 (cleanup)
  *
@@ -269,8 +267,6 @@ export function subscribeToNewInquiries(
   wholesalerId: string,
   onNewInquiry: (inquiry: Inquiry) => void,
 ): () => void {
-  // ⚠️ 주의: inquiries 테이블 구조에 따라 필터를 조정해야 할 수 있습니다
-  // 현재는 모든 새 문의를 구독하지만, 도매점별 필터링이 필요하면 수정 필요
   const channel = supabase
     .channel(`new-inquiries-${wholesalerId}`)
     .on(
@@ -279,19 +275,24 @@ export function subscribeToNewInquiries(
         event: "INSERT",
         schema: "public",
         table: "inquiries",
-        // 필터가 필요한 경우 여기에 추가
-        // filter: `wholesaler_id=eq.${wholesalerId}`,
+        filter: `wholesaler_id=eq.${wholesalerId}`,
       },
       (payload) => {
-        console.log("📬 새 문의 알림:", payload.new);
-        onNewInquiry(payload.new as Inquiry);
+        const inquiry = payload.new as Inquiry;
+        // inquiry_type이 'retailer_to_wholesaler'인 경우만 처리
+        if (inquiry.inquiry_type === "retailer_to_wholesaler") {
+          console.log("📬 새 문의 알림:", inquiry);
+          onNewInquiry(inquiry);
+        }
       },
     )
     .subscribe();
 
   // 반드시 cleanup 함수 반환 (메모리 누수 방지)
   return () => {
-    console.log(`🧹 Cleaning up inquiry subscription: ${wholesalerId}`);
+    console.log(
+      `🧹 Cleaning up inquiry subscription for wholesaler: ${wholesalerId}`,
+    );
     supabase.removeChannel(channel);
   };
 }

@@ -1662,19 +1662,19 @@ Anonymous Code 자동 생성 로직을 구현해줘.
 
 #### 4. 실시간 알림
 
-- [ ] **Realtime 구독 설정**
+- [x] **Realtime 구독 설정** ✅
 
-  - [ ] `lib/supabase/realtime.ts`에 `subscribeToNewInquiries()` 추가
-  - [ ] `inquiries` 테이블 INSERT 이벤트 구독
-  - [ ] 현재 도매점 관련 문의만 필터링
-  - [ ] ⚠️ Cleanup 함수 구현 (메모리 누수 방지)
-  - [ ] 구독 해제 로그 추가 (디버깅용)
+  - [x] `lib/supabase/realtime.ts`에 `subscribeToNewInquiries()` 추가 ✅
+  - [x] `inquiries` 테이블 INSERT 이벤트 구독 ✅
+  - [x] 현재 도매점 관련 문의만 필터링 ✅
+  - [x] ⚠️ Cleanup 함수 구현 (메모리 누수 방지) ✅
+  - [x] 구독 해제 로그 추가 (디버깅용) ✅
 
-- [ ] **대시보드/헤더에 알림 추가**
-  - [ ] 새 문의 도착 시 Toast 알림
-  - [ ] 헤더에 알림 아이콘 (Bell)
-  - [ ] 미답변 문의 카운트 표시
-  - [ ] 알림 클릭 시 문의 목록으로 이동
+- [x] **대시보드/헤더에 알림 추가** ✅
+  - [x] 새 문의 도착 시 Toast 알림 ✅
+  - [x] 헤더에 알림 아이콘 (Bell) ✅
+  - [x] 미답변 문의 카운트 표시 ✅
+  - [x] 알림 클릭 시 문의 목록으로 이동 ✅
 
 #### 5. 보안 확인
 

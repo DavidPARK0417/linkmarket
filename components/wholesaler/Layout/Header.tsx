@@ -24,7 +24,7 @@
 import { UserButton, useUser } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bell, Shield, Package, Clock } from "lucide-react";
+import { Bell, Shield, Package, Clock, MessageSquare } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { UserRole } from "@/types/database";
 import { useWholesalerNotifications } from "@/hooks/use-wholesaler-notifications";
@@ -63,9 +63,12 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
 
   // 알림 훅 사용
   const {
-    unreadCount,
+    unreadOrdersCount,
     recentOrders,
+    unreadInquiriesCount,
+    recentInquiries,
     hasNewNotifications,
+    totalUnreadCount,
     isLoading: isLoadingNotifications,
     markAsRead,
     isMarkingAsRead,
@@ -115,6 +118,12 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
     setIsDropdownOpen(false);
   };
 
+  // 문의 상세 페이지로 이동
+  const handleInquiryClick = (inquiryId: string) => {
+    router.push(`/wholesaler/inquiries/${inquiryId}`);
+    setIsDropdownOpen(false);
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6">
       {/* 페이지 제목 영역 */}
@@ -154,10 +163,10 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel className="flex items-center justify-between">
-              <span>주문 알림</span>
-              {unreadCount > 0 && (
+              <span>알림</span>
+              {totalUnreadCount > 0 && (
                 <span className="text-xs font-normal text-red-500">
-                  읽지 않음 {unreadCount}개
+                  읽지 않음 {totalUnreadCount}개
                 </span>
               )}
             </DropdownMenuLabel>
@@ -166,60 +175,146 @@ export default function WholesalerHeader({ role }: WholesalerHeaderProps) {
               <div className="p-4 text-center text-sm text-gray-500">
                 알림을 불러오는 중...
               </div>
-            ) : recentOrders.length === 0 ? (
+            ) : recentOrders.length === 0 && recentInquiries.length === 0 ? (
               <div className="p-4 text-center text-sm text-gray-500">
                 알림이 없습니다
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto">
-                {recentOrders.map((order) => (
-                  <DropdownMenuItem
-                    key={order.id}
-                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
-                    onClick={() => handleOrderClick(order.id)}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium text-sm">
-                          {order.product.name}
+                {/* 주문 알림 섹션 */}
+                {recentOrders.length > 0 && (
+                  <>
+                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
+                      주문 알림
+                      {unreadOrdersCount > 0 && (
+                        <span className="ml-2 text-red-500">
+                          ({unreadOrdersCount})
                         </span>
-                        {!order.is_read && (
-                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {formatDateTime(order.created_at, "time-only")}
-                      </span>
+                      )}
                     </div>
-                    <div className="flex items-center justify-between w-full text-xs text-gray-600">
-                      <span>주문번호: {order.order_number}</span>
-                      <span className="font-medium">
-                        {formatPrice(order.total_amount)}
-                      </span>
+                    {recentOrders.map((order) => (
+                      <DropdownMenuItem
+                        key={`order-${order.id}`}
+                        className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                        onClick={() => handleOrderClick(order.id)}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            <Package className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium text-sm">
+                              {order.product.name}
+                            </span>
+                            {!order.is_read && (
+                              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            {formatDateTime(order.created_at, "time-only")}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between w-full text-xs text-gray-600">
+                          <span>주문번호: {order.order_number}</span>
+                          <span className="font-medium">
+                            {formatPrice(order.total_amount)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          <span>
+                            {formatDateTime(order.created_at, "default")}
+                          </span>
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                    {recentInquiries.length > 0 && <DropdownMenuSeparator />}
+                  </>
+                )}
+
+                {/* 문의 알림 섹션 */}
+                {recentInquiries.length > 0 && (
+                  <>
+                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
+                      문의 알림
+                      {unreadInquiriesCount > 0 && (
+                        <span className="ml-2 text-red-500">
+                          ({unreadInquiriesCount})
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        {formatDateTime(order.created_at, "default")}
-                      </span>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
+                    {recentInquiries.map((inquiry) => (
+                      <DropdownMenuItem
+                        key={`inquiry-${inquiry.id}`}
+                        className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                        onClick={() => handleInquiryClick(inquiry.id)}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium text-sm">
+                              {inquiry.title}
+                            </span>
+                            {inquiry.status === "open" && (
+                              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            {formatDateTime(inquiry.created_at, "time-only")}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between w-full text-xs text-gray-600">
+                          {inquiry.user_anonymous_code && (
+                            <span>문의자: {inquiry.user_anonymous_code}</span>
+                          )}
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded ${
+                              inquiry.status === "open"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-700"
+                            }`}
+                          >
+                            {inquiry.status === "open" ? "미답변" : "답변완료"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          <span>
+                            {formatDateTime(inquiry.created_at, "default")}
+                          </span>
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                )}
               </div>
             )}
-            {recentOrders.length > 0 && (
+
+            {(recentOrders.length > 0 || recentInquiries.length > 0) && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-center justify-center cursor-pointer"
-                  onClick={() => {
-                    router.push("/wholesaler/orders");
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  모든 주문 보기
-                </DropdownMenuItem>
+                <div className="flex gap-2">
+                  {recentOrders.length > 0 && (
+                    <DropdownMenuItem
+                      className="text-center justify-center cursor-pointer flex-1"
+                      onClick={() => {
+                        router.push("/wholesaler/orders");
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      모든 주문 보기
+                    </DropdownMenuItem>
+                  )}
+                  {recentInquiries.length > 0 && (
+                    <DropdownMenuItem
+                      className="text-center justify-center cursor-pointer flex-1"
+                      onClick={() => {
+                        router.push("/wholesaler/inquiries");
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      모든 문의 보기
+                    </DropdownMenuItem>
+                  )}
+                </div>
               </>
             )}
           </DropdownMenuContent>
