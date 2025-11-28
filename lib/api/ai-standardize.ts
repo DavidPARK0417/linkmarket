@@ -32,6 +32,7 @@ export interface StandardizeResult {
   originalName: string;
   standardizedName: string;
   suggestedCategory: string;
+  suggestedUnit?: string; // 추천 단위 (선택)
   keywords: string[];
   confidence: number; // 0-1
 }
@@ -114,6 +115,7 @@ export async function standardizeProductName(
 {
   "standardizedName": "표준화된 상품명",
   "suggestedCategory": "추천 카테고리",
+  "suggestedUnit": "kg",
   "keywords": ["키워드1", "키워드2", "키워드3"],
   "confidence": 0.95
 }
@@ -123,6 +125,8 @@ export async function standardizeProductName(
 - 등급은 괄호로 표시 (예: 특 → (특급), 상 → (상급))
 - 불필요한 기호 제거
 - 카테고리는 다음 중 하나로 분류: 과일, 채소, 수산물, 곡물, 견과류, 기타
+- 단위는 다음 중 하나로 추출: kg, g, 박스, 개, 봉지, 팩, 병, 캔, 리터, ml
+- 상품명에서 단위를 찾을 수 없으면 null로 설정
 - 키워드는 3-5개 추출 (검색에 유용한 단어들)
 - confidence는 표준화 신뢰도 (0.8 이상 권장)
 `;
@@ -223,6 +227,7 @@ export async function standardizeProductName(
       originalName: trimmedName,
       standardizedName: result.standardizedName || trimmedName,
       suggestedCategory: result.suggestedCategory || "기타",
+      suggestedUnit: result.suggestedUnit || undefined,
       keywords: Array.isArray(result.keywords) ? result.keywords : [],
       confidence:
         typeof result.confidence === "number" ? result.confidence : 0.5,
@@ -275,6 +280,7 @@ ${productNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}
     "originalName": "원본 상품명1",
     "standardizedName": "표준화된 상품명1",
     "suggestedCategory": "카테고리1",
+    "suggestedUnit": "kg",
     "keywords": ["키워드1", "키워드2"],
     "confidence": 0.95
   },
@@ -285,6 +291,7 @@ ${productNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}
 - 단위는 띄어쓰기로 구분
 - 등급은 괄호로 표시
 - 카테고리: 과일, 채소, 수산물, 곡물, 견과류, 기타
+- 단위: kg, g, 박스, 개, 봉지, 팩, 병, 캔, 리터, ml (없으면 null)
 - 키워드는 3-5개 추출
 `;
 

@@ -333,18 +333,54 @@ export default function ProductForm({
       shouldValidate: true,
     });
 
-    // 카테고리 업데이트 (카테고리가 비어있거나 "기타"인 경우만)
-    const currentCategory = form.getValues("category");
-    if (!currentCategory || currentCategory === "기타") {
-      if (CATEGORIES.includes(standardizeResult.suggestedCategory as any)) {
-        form.setValue("category", standardizeResult.suggestedCategory, {
-          shouldValidate: true,
-        });
-      }
+    // 카테고리 업데이트 (추천 카테고리가 유효한 경우 항상 적용)
+    console.log("🔍 [ProductForm] 카테고리 체크 시작");
+    console.log("  - 추천 카테고리:", standardizeResult.suggestedCategory);
+    console.log("  - 유효한 카테고리 목록:", CATEGORIES);
+    
+    if (
+      standardizeResult.suggestedCategory &&
+      CATEGORIES.includes(standardizeResult.suggestedCategory as any)
+    ) {
+      console.log("✅ [ProductForm] 추천 카테고리 적용:", standardizeResult.suggestedCategory);
+      form.setValue("category", standardizeResult.suggestedCategory, {
+        shouldValidate: true,
+      });
+      console.log("✅ [ProductForm] 카테고리 setValue 완료");
+    } else if (standardizeResult.suggestedCategory) {
+      console.warn("⚠️ [ProductForm] 추천 카테고리가 유효하지 않음:", {
+        suggested: standardizeResult.suggestedCategory,
+        validCategories: CATEGORIES,
+        isIncluded: CATEGORIES.includes(standardizeResult.suggestedCategory as any),
+      });
+    } else {
+      console.warn("⚠️ [ProductForm] 추천 카테고리가 없음");
+    }
+
+    // 단위 업데이트 (추천 단위가 유효한 경우 항상 적용)
+    console.log("🔍 [ProductForm] 단위 체크 시작");
+    console.log("  - 추천 단위:", standardizeResult.suggestedUnit);
+    console.log("  - 유효한 단위 목록:", UNITS);
+    
+    if (
+      standardizeResult.suggestedUnit &&
+      UNITS.includes(standardizeResult.suggestedUnit as any)
+    ) {
+      console.log("✅ [ProductForm] 추천 단위 적용:", standardizeResult.suggestedUnit);
+      form.setValue("unit", standardizeResult.suggestedUnit, {
+        shouldValidate: true,
+      });
+      console.log("✅ [ProductForm] 단위 setValue 완료");
+    } else if (standardizeResult.suggestedUnit) {
+      console.warn("⚠️ [ProductForm] 추천 단위가 유효하지 않음:", {
+        suggested: standardizeResult.suggestedUnit,
+        validUnits: UNITS,
+        isIncluded: UNITS.includes(standardizeResult.suggestedUnit as any),
+      });
     }
 
     setStandardizeDialogOpen(false);
-    toast.success("표준화된 상품명이 적용되었습니다.");
+    toast.success("표준화된 상품명, 카테고리, 단위가 적용되었습니다.");
   };
 
   // 폼 제출 핸들러
@@ -388,7 +424,9 @@ export default function ProductForm({
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={(e) => {
+              e.preventDefault(); // 엔터키로 제출되는 것을 막음
+            }}
             className="space-y-6"
           >
             {/* 상품명 */}
@@ -441,7 +479,7 @@ export default function ProductForm({
                   <FormLabel>카테고리 *</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value || ""}
                     disabled={isSubmitting}
                   >
                     <FormControl>
@@ -657,7 +695,7 @@ export default function ProductForm({
                     <FormLabel>단위 *</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || ""}
                       disabled={isSubmitting}
                     >
                       <FormControl>
@@ -1014,7 +1052,13 @@ export default function ProductForm({
                   취소
                 </Button>
               )}
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  form.handleSubmit(handleSubmit)();
+                }}
+              >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
@@ -1070,6 +1114,20 @@ export default function ProductForm({
                     </Badge>
                   </div>
                 </div>
+
+                {/* 추천 단위 */}
+                {standardizeResult.suggestedUnit && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      추천 단위
+                    </label>
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="text-sm">
+                        {standardizeResult.suggestedUnit}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
 
                 {/* 검색 키워드 */}
                 {standardizeResult.keywords.length > 0 && (
