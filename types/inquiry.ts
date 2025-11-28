@@ -70,6 +70,15 @@ export interface InquiryFilter {
 }
 
 /**
+ * 문의 목록 조회 옵션 타입
+ */
+export interface GetInquiriesOptions {
+  page?: number;
+  pageSize?: number;
+  filter?: InquiryFilter;
+}
+
+/**
  * 문의 상세 정보 타입
  * 익명 코드 등 추가 정보 포함
  */
